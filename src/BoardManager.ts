@@ -21,83 +21,85 @@ export class BoardManager extends Laya.Script {
         this.board.width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceY;
         this.board.height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
 
-        this.board.array = [
-            {
-                "listItemImg": {
-                    "skin": ''
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/5.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": ''
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/7.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/8.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": ''
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/7.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/8.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": ''
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/7.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/8.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/9.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/4.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/4.png'
-                }
-            },
-            {
-                "listItemImg": {
-                    "skin": 'resources/farm/4.png'
-                }
-            },
-        ]
+        // this.board.array = [
+        //     {
+        //         "listItemImg": {
+        //             "skin": ''
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/5.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": ''
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/7.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/8.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": ''
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/7.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/8.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": ''
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/7.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/8.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/9.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/4.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/4.png'
+        //         }
+        //     },
+        //     {
+        //         "listItemImg": {
+        //             "skin": 'resources/farm/4.png'
+        //         }
+        //     },
+        // ]
+
+        // this.board.array = generateListData()
 
         this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
     }

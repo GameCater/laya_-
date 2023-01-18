@@ -34,23 +34,9 @@ function __$decorate(assetId, codePath) {
   var __defProp = Object.defineProperty;
   var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-  // E:/projects/laya3/demo_0_2d/src/Main.generated.ts
-  var MainBase = class extends Laya.Scene {
-  };
-  __name(MainBase, "MainBase");
-
-  // E:/projects/laya3/demo_0_2d/src/Main.ts
-  var __decorate = __$decorate("7bad1742-6eed-4d8d-81c0-501dc5bf03d6", "../src/Main.ts");
+  // ../../../../../Document/Project/LayaAir/LayaAir3/laya_LinkGame/src/BoardManager.ts
+  var __decorate = __$decorate("9df8c109-eeb5-455d-be8f-39ca89ac47fb", "../src/BoardManager.ts");
   var { regClass, property } = Laya;
-  var Main = /* @__PURE__ */ __name(class Main2 extends MainBase {
-  }, "Main");
-  Main = __decorate([
-    regClass()
-  ], Main);
-
-  // E:/projects/laya3/demo_0_2d/src/BoardManager.ts
-  var __decorate2 = __$decorate("9df8c109-eeb5-455d-be8f-39ca89ac47fb", "../src/BoardManager.ts");
-  var { regClass: regClass2, property: property2 } = Laya;
   var BoardManager = /* @__PURE__ */ __name(class BoardManager2 extends Laya.Script {
     constructor() {
       super(...arguments);
@@ -66,83 +52,6 @@ function __$decorate(assetId, codePath) {
       this.board.repeatY = this.row;
       this.board.width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceY;
       this.board.height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
-      this.board.array = [
-        {
-          "listItemImg": {
-            "skin": ""
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/5.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": ""
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/7.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/8.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": ""
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/7.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/8.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": ""
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/7.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/8.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/9.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/4.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/4.png"
-          }
-        },
-        {
-          "listItemImg": {
-            "skin": "resources/farm/4.png"
-          }
-        }
-      ];
       this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
     }
     onItemSelect(idx) {
@@ -174,16 +83,30 @@ function __$decorate(assetId, codePath) {
       this.selected = [];
     }
   }, "BoardManager");
-  __decorate2([
-    property2(),
+  __decorate([
+    property(),
     __metadata("design:type", Number)
   ], BoardManager.prototype, "col", void 0);
-  __decorate2([
-    property2(),
+  __decorate([
+    property(),
     __metadata("design:type", Number)
   ], BoardManager.prototype, "row", void 0);
-  BoardManager = __decorate2([
-    regClass2()
+  BoardManager = __decorate([
+    regClass()
   ], BoardManager);
+
+  // ../../../../../Document/Project/LayaAir/LayaAir3/laya_LinkGame/src/Main.generated.ts
+  var MainBase = class extends Laya.Scene {
+  };
+  __name(MainBase, "MainBase");
+
+  // ../../../../../Document/Project/LayaAir/LayaAir3/laya_LinkGame/src/Main.ts
+  var __decorate2 = __$decorate("7bad1742-6eed-4d8d-81c0-501dc5bf03d6", "../src/Main.ts");
+  var { regClass: regClass2, property: property2 } = Laya;
+  var Main = /* @__PURE__ */ __name(class Main2 extends MainBase {
+  }, "Main");
+  Main = __decorate2([
+    regClass2()
+  ], Main);
 })();
 //# sourceMappingURL=bundle.js.map
