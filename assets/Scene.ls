@@ -52,8 +52,8 @@
         {
           "_$type": "9df8c109-eeb5-455d-be8f-39ca89ac47fb",
           "scriptPath": "../src/BoardManager.ts",
-          "col": 20,
-          "row": 12
+          "col": 6,
+          "row": 6
         }
       ]
     }

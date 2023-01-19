@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 /**
  * 
  * @param {*} row 列表列数
@@ -47,7 +45,7 @@ function generateListData(row, col) {
                     skin: ''
                 }
             };
-            item.listItemImg.skin = temp[num ++];
+            item.listItemImg.skin = `resources/farm/${temp[num ++]}.png`;
             listData[idx] = item;
         }
     }
@@ -58,8 +56,4 @@ function randNumber(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function writeToFile() {
-    
-}
-
-generateListData(4, 4);
+export default generateListData;

@@ -20,13 +20,17 @@
     "minPlatformVersion": "1060",
     "logLevel": "log",
     "msg": "1.已经生成过签名，请将签名文件放到Laya项目根目录sign/release文件夹中。\n2.如果还没有生成过签名，可以自己生成签名文件，并放置到Laya项目根目录sign/release文件夹中。",
-    "subpackagesTip": "请确保手机中存在subPkg目录\n当指定分包目录时，目录根目录下的main.js会作为入口文件；也可以指定一个js文件作为分包。"
+    "subpackagesTip": "请确保手机中存在subPkg目录\n当指定分包目录时，目录根目录下的main.js会作为入口文件；也可以指定一个js文件作为分包。",
+    "countryName": "CN",
+    "creatRelease": false
   },
   "vivogame": {
     "minPlatformVersion": "1063",
     "logLevel": "log",
     "msg": "1.已经生成过签名，请将签名文件放到Laya项目根目录sign/release文件夹中。\n2.如果还没有生成过签名，可以自己生成签名文件，并放置到Laya项目根目录sign/release文件夹中。",
-    "subpackagesTip": "当指定分包目录时，目录根目录下的game.js会作为入口文件；也可以指定一个js文件作为分包。"
+    "subpackagesTip": "当指定分包目录时，目录根目录下的game.js会作为入口文件；也可以指定一个js文件作为分包。",
+    "countryName": "CN",
+    "creatRelease": false
   },
   "bytedancegame": {
     "subpackagesTip": "当指定分包目录时，目录根目录下的game.js会作为入口文件；也可以指定一个js文件作为分包。"
@@ -35,7 +39,9 @@
     "minPlatformVersion": "1050",
     "logLevel": "log",
     "msg": "1.已经生成过签名，请将签名文件放到Laya项目根目录sign/release文件夹中。\n2.如果还没有生成过签名，可以自己生成签名文件，并放置到Laya项目根目录sign/release文件夹中。",
-    "subpackagesTip": "当指定分包目录时，目录根目录下的main.js会作为入口文件；也可以指定一个js文件作为分包。"
+    "subpackagesTip": "当指定分包目录时，目录根目录下的main.js会作为入口文件；也可以指定一个js文件作为分包。",
+    "countryName": "CN",
+    "creatRelease": false
   },
   "layaverse": {
     "compressJSON": false,
