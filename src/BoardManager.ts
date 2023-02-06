@@ -5,26 +5,62 @@ const { regClass, property } = Laya;
 
 @regClass()
 export class BoardManager extends Laya.Script {
-    @property()
-    public col: number = 12;
-    @property()
-    public row: number = 8;
+    public col: number;
+    public row: number;
 
-    private imgWidth: number = 36;
-    private imgHeight: number = 36;
+    private imgWidth: number;
+    private imgHeight: number;
+    private gridSpace: number;
 
     private board: Laya.List;
     private selected: number[] = [];
     private total: number;
 
+    private limitTime: number;
+    private currentTime: number = 0;
+
     onEnable() {
         this.board = this.owner as Laya.List;
+    }
+
+    onUpdate(): void {
+        this.currentTime += Laya.timer.delta;
+        let leftTime = (1 - this.currentTime / this.limitTime);
+        Laya.stage.event('time', leftTime);
+    }
+    
+    public generateBoard(col: number, row: number, gridWidth: number, gridSpace: number, limitTime: number) {
+        this.col = col + 2;
+        this.row = row + 2;
+        this.imgHeight = this.imgWidth = gridWidth;
+        this.gridSpace = gridSpace;
+
+        this.limitTime = limitTime * 60 * 1000;
+        this.currentTime = 0;
+
+        this.board.renderHandler = Laya.Handler.create(this, (cell: Laya.Box) => {
+            cell.width = this.imgWidth;
+            cell.height = this.imgHeight;
+        }, null, false);
+
+        let width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceX;
+        let height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
+        let box = this.board.getChildAt(0) as Laya.Box;    
+        this.board.width = width;
+        this.board.height = height;
+
         this.board.repeatX = this.col;
         this.board.repeatY = this.row;
+        this.board.spaceX = this.board.spaceY = this.gridSpace;
+        this.board.x = Math.floor(Math.abs(Laya.stage.width - width) / 2);
 
-        this.board.width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceY;
-        this.board.height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
-
+        // this.board.cells.forEach((c) => {
+        //     (c.parent as Laya.Box).width = this.imgWidth;
+        //     (c.parent as Laya.Box).height = this.imgHeight;
+        //     c.width = this.imgWidth;
+        //     c.height = this.imgHeight;
+        // })
+        
         const data = generateListData(this.row, this.col);
         this.board.array = data;
         this.total = (this.col - 2) * (this.row - 2);
@@ -53,15 +89,15 @@ export class BoardManager extends Laya.Script {
     // 是否连通
     private canRemove(src: number, dest: number): boolean {
         // if (this.getImg(src) === this.getImg(dest)) return true;
-        const srcP = this.transformIdx2Point(src);
-        const destP = this.transformIdx2Point(dest);
+        const srcP = Point.transformIdx2Point(src, this.col);
+        const destP = Point.transformIdx2Point(dest, this.col);
 
         // 判断内容是否一致
         const isSame = this.getImg(src) === this.getImg(dest);
         if (!isSame) return false;
 
         const res = this.matchBlockTwo(srcP, destP);
-        console.log(res);
+        // console.log(res);
         
         return res !== null;
     }
@@ -82,7 +118,7 @@ export class BoardManager extends Laya.Script {
 
             for (let i = min + 1; i < max; i ++) {
                 const p = new Point(src.x, i);
-                if (this.getImg(this.transformPoint2Idx(p))) {
+                if (this.getImg(Point.transformPoint2Idx(p, this.col))) {
                     return false;
                 }
             }
@@ -92,7 +128,7 @@ export class BoardManager extends Laya.Script {
 
             for (let i = min + 1; i < max; i ++) {
                 const p = new Point(i, src.y);
-                if (this.getImg(this.transformPoint2Idx(p))) {
+                if (this.getImg(Point.transformPoint2Idx(p, this.col))) {
                     return false;
                 }
             }
@@ -113,7 +149,7 @@ export class BoardManager extends Laya.Script {
         // 对角点1
         let counterPoint = new Point(src.x, dest.y);
         // 对角点为空
-        if (!this.getImg(this.transformPoint2Idx(counterPoint))) {
+        if (!this.getImg(Point.transformPoint2Idx(counterPoint, this.col))) {
             // src 到 counterPoint 是否0折连接
             const scMatch = this.matchBlock(src, counterPoint);
             // counterPoint 到 dest 是否0折连接
@@ -125,7 +161,7 @@ export class BoardManager extends Laya.Script {
 
         // 对角点2
         counterPoint = new Point(dest.x, src.y);
-        if (!this.getImg(this.transformPoint2Idx(counterPoint))) {
+        if (!this.getImg(Point.transformPoint2Idx(counterPoint, this.col))) {
             // src 到 counterPoint 是否0折连接
             const scMatch = this.matchBlock(src, counterPoint);
             // counterPoint 到 dest 是否0折连接
@@ -168,7 +204,7 @@ export class BoardManager extends Laya.Script {
         // 从src竖直向下扫描
         for (i = src.x + 1; i < this.row; i ++) {
             const pSrc = new Point(i, src.y);
-            if (!this.getImg(this.transformPoint2Idx(pSrc))) {
+            if (!this.getImg(Point.transformPoint2Idx(pSrc, this.col))) {
                 const counterP = this.matchBlockOne(pSrc, dest);
                 if (counterP !== null) {
                     pList.push(pSrc);
@@ -182,7 +218,7 @@ export class BoardManager extends Laya.Script {
         i = 0;
         for (i = src.x - 1; i >= 0; i --) {
             const pSrc = new Point(i, src.y);
-            if (!this.getImg(this.transformPoint2Idx(pSrc))) {
+            if (!this.getImg(Point.transformPoint2Idx(pSrc, this.col))) {
                 const counterP = this.matchBlockOne(pSrc, dest);
                 if (counterP !== null) {
                     pList.push(pSrc);
@@ -196,7 +232,7 @@ export class BoardManager extends Laya.Script {
         i = 0;
         for (i = src.y - 1; i >= 0; i --) {
             const pSrc = new Point(src.x, i);
-            if (!this.getImg(this.transformPoint2Idx(pSrc))) {
+            if (!this.getImg(Point.transformPoint2Idx(pSrc, this.col))) {
                 const counterP = this.matchBlockOne(pSrc, dest);
                 if (counterP !== null) {
                     pList.push(pSrc);
@@ -210,7 +246,7 @@ export class BoardManager extends Laya.Script {
         i = 0;
         for (i = src.y + 1; i < this.col; i ++) {
             const pSrc = new Point(src.x, i);
-            if (!this.getImg(this.transformPoint2Idx(pSrc))) {
+            if (!this.getImg(Point.transformPoint2Idx(pSrc, this.col))) {
                 const counterP = this.matchBlockOne(pSrc, dest);
                 if (counterP !== null) {
                     pList.push(pSrc);
@@ -223,17 +259,6 @@ export class BoardManager extends Laya.Script {
         return null;
     }
 
-    // 一维数组索引转为二维数组坐标
-    private transformIdx2Point(idx: number): Point {
-        const p = new Point();
-        p.x = Math.floor(idx / this.col);
-        p.y = idx % this.col;
-        return p;
-    }
-
-    private transformPoint2Idx(p: Point): number {
-        return p.x * this.col + p.y;
-    }
 
     // 移除格子
     private removeImg(idx: number): void {
@@ -260,5 +285,16 @@ class Point {
     constructor(x?: number, y?: number) {
         this.x = x;
         this.y = y;
+    }
+
+    static transformIdx2Point(idx: number, col: number): Point {
+        const p = new Point();
+        p.x = Math.floor(idx / col);
+        p.y = idx % col;
+        return p;
+    }
+
+    static transformPoint2Idx(p: Point, col: number): number {
+        return p.x * col + p.y;
     }
 }

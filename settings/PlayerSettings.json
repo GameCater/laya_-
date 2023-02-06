@@ -1,11 +1,11 @@
 {
   "resolution": {
-    "designWidth": 1280,
-    "designHeight": 720,
-    "scaleMode": "fixedheight",
+    "designWidth": 720,
+    "designHeight": 1280,
+    "scaleMode": "showall",
     "screenMode": "none",
     "alignV": "top",
-    "alignH": "left",
+    "alignH": "center",
     "backgroundColor": "#888888"
   },
   "2D": {

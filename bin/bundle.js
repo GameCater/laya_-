@@ -90,18 +90,37 @@ function __$decorate(assetId, codePath) {
   var BoardManager = /* @__PURE__ */ __name(class BoardManager2 extends Laya.Script {
     constructor() {
       super(...arguments);
-      this.col = 12;
-      this.row = 8;
-      this.imgWidth = 36;
-      this.imgHeight = 36;
       this.selected = [];
+      this.currentTime = 0;
     }
     onEnable() {
       this.board = this.owner;
+    }
+    onUpdate() {
+      this.currentTime += Laya.timer.delta;
+      let leftTime = 1 - this.currentTime / this.limitTime;
+      Laya.stage.event("time", leftTime);
+    }
+    generateBoard(col, row, gridWidth, gridSpace, limitTime) {
+      this.col = col + 2;
+      this.row = row + 2;
+      this.imgHeight = this.imgWidth = gridWidth;
+      this.gridSpace = gridSpace;
+      this.limitTime = limitTime * 60 * 1e3;
+      this.currentTime = 0;
+      this.board.renderHandler = Laya.Handler.create(this, (cell) => {
+        cell.width = this.imgWidth;
+        cell.height = this.imgHeight;
+      }, null, false);
+      let width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceX;
+      let height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
+      let box = this.board.getChildAt(0);
+      this.board.width = width;
+      this.board.height = height;
       this.board.repeatX = this.col;
       this.board.repeatY = this.row;
-      this.board.width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceY;
-      this.board.height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
+      this.board.spaceX = this.board.spaceY = this.gridSpace;
+      this.board.x = Math.floor(Math.abs(Laya.stage.width - width) / 2);
       const data = generateJson_default(this.row, this.col);
       this.board.array = data;
       this.total = (this.col - 2) * (this.row - 2);
@@ -124,13 +143,12 @@ function __$decorate(assetId, codePath) {
       }
     }
     canRemove(src, dest) {
-      const srcP = this.transformIdx2Point(src);
-      const destP = this.transformIdx2Point(dest);
+      const srcP = Point.transformIdx2Point(src, this.col);
+      const destP = Point.transformIdx2Point(dest, this.col);
       const isSame = this.getImg(src) === this.getImg(dest);
       if (!isSame)
         return false;
       const res = this.matchBlockTwo(srcP, destP);
-      console.log(res);
       return res !== null;
     }
     matchBlock(src, dest) {
@@ -142,7 +160,7 @@ function __$decorate(assetId, codePath) {
         max = src.y < dest.y ? dest.y : src.y;
         for (let i = min + 1; i < max; i++) {
           const p = new Point(src.x, i);
-          if (this.getImg(this.transformPoint2Idx(p))) {
+          if (this.getImg(Point.transformPoint2Idx(p, this.col))) {
             return false;
           }
         }
@@ -151,7 +169,7 @@ function __$decorate(assetId, codePath) {
         max = src.x < dest.x ? dest.x : src.x;
         for (let i = min + 1; i < max; i++) {
           const p = new Point(i, src.y);
-          if (this.getImg(this.transformPoint2Idx(p))) {
+          if (this.getImg(Point.transformPoint2Idx(p, this.col))) {
             return false;
           }
         }
@@ -162,7 +180,7 @@ function __$decorate(assetId, codePath) {
       if (src.x === dest.x || src.y === dest.y)
         return null;
       let counterPoint = new Point(src.x, dest.y);
-      if (!this.getImg(this.transformPoint2Idx(counterPoint))) {
+      if (!this.getImg(Point.transformPoint2Idx(counterPoint, this.col))) {
         const scMatch = this.matchBlock(src, counterPoint);
         const cdMatch = scMatch ? this.matchBlock(counterPoint, dest) : scMatch;
         if (scMatch && cdMatch) {
@@ -170,7 +188,7 @@ function __$decorate(assetId, codePath) {
         }
       }
       counterPoint = new Point(dest.x, src.y);
-      if (!this.getImg(this.transformPoint2Idx(counterPoint))) {
+      if (!this.getImg(Point.transformPoint2Idx(counterPoint, this.col))) {
         const scMatch = this.matchBlock(src, counterPoint);
         const cdMatch = scMatch ? this.matchBlock(counterPoint, dest) : scMatch;
         if (scMatch && cdMatch) {
@@ -203,7 +221,7 @@ function __$decorate(assetId, codePath) {
       let i = 0;
       for (i = src.x + 1; i < this.row; i++) {
         const pSrc = new Point(i, src.y);
-        if (!this.getImg(this.transformPoint2Idx(pSrc))) {
+        if (!this.getImg(Point.transformPoint2Idx(pSrc, this.col))) {
           const counterP = this.matchBlockOne(pSrc, dest);
           if (counterP !== null) {
             pList.push(pSrc);
@@ -217,7 +235,7 @@ function __$decorate(assetId, codePath) {
       i = 0;
       for (i = src.x - 1; i >= 0; i--) {
         const pSrc = new Point(i, src.y);
-        if (!this.getImg(this.transformPoint2Idx(pSrc))) {
+        if (!this.getImg(Point.transformPoint2Idx(pSrc, this.col))) {
           const counterP = this.matchBlockOne(pSrc, dest);
           if (counterP !== null) {
             pList.push(pSrc);
@@ -231,7 +249,7 @@ function __$decorate(assetId, codePath) {
       i = 0;
       for (i = src.y - 1; i >= 0; i--) {
         const pSrc = new Point(src.x, i);
-        if (!this.getImg(this.transformPoint2Idx(pSrc))) {
+        if (!this.getImg(Point.transformPoint2Idx(pSrc, this.col))) {
           const counterP = this.matchBlockOne(pSrc, dest);
           if (counterP !== null) {
             pList.push(pSrc);
@@ -245,7 +263,7 @@ function __$decorate(assetId, codePath) {
       i = 0;
       for (i = src.y + 1; i < this.col; i++) {
         const pSrc = new Point(src.x, i);
-        if (!this.getImg(this.transformPoint2Idx(pSrc))) {
+        if (!this.getImg(Point.transformPoint2Idx(pSrc, this.col))) {
           const counterP = this.matchBlockOne(pSrc, dest);
           if (counterP !== null) {
             pList.push(pSrc);
@@ -257,15 +275,6 @@ function __$decorate(assetId, codePath) {
           break;
       }
       return null;
-    }
-    transformIdx2Point(idx) {
-      const p = new Point();
-      p.x = Math.floor(idx / this.col);
-      p.y = idx % this.col;
-      return p;
-    }
-    transformPoint2Idx(p) {
-      return p.x * this.col + p.y;
     }
     removeImg(idx) {
       this.board.array[idx].listItemImg.skin = "";
@@ -280,14 +289,6 @@ function __$decorate(assetId, codePath) {
       this.selected = [];
     }
   }, "BoardManager");
-  __decorate([
-    property(),
-    __metadata("design:type", Number)
-  ], BoardManager.prototype, "col", void 0);
-  __decorate([
-    property(),
-    __metadata("design:type", Number)
-  ], BoardManager.prototype, "row", void 0);
   BoardManager = __decorate([
     regClass()
   ], BoardManager);
@@ -296,21 +297,114 @@ function __$decorate(assetId, codePath) {
       this.x = x;
       this.y = y;
     }
+    static transformIdx2Point(idx, col) {
+      const p = new Point();
+      p.x = Math.floor(idx / col);
+      p.y = idx % col;
+      return p;
+    }
+    static transformPoint2Idx(p, col) {
+      return p.x * col + p.y;
+    }
   };
   __name(Point, "Point");
 
-  // E:/projects/laya3/demo_0_2d/src/Main.generated.ts
-  var MainBase = class extends Laya.Scene {
+  // E:/projects/laya3/demo_0_2d/src/GameConfig.ts
+  var GameConfig = class {
   };
-  __name(MainBase, "MainBase");
+  __name(GameConfig, "GameConfig");
+  GameConfig.Level = [
+    { rank: 1, col: 6, row: 8, gridWidth: 80, gridSpace: 2, limitTime: 5 },
+    { rank: 2, col: 9, row: 12, gridWidth: 60, gridSpace: 2, limitTime: 10 },
+    { rank: 3, col: 12, row: 16, gridWidth: 46, gridSpace: 2, limitTime: 15 }
+  ];
 
-  // E:/projects/laya3/demo_0_2d/src/Main.ts
-  var __decorate2 = __$decorate("7bad1742-6eed-4d8d-81c0-501dc5bf03d6", "../src/Main.ts");
+  // E:/projects/laya3/demo_0_2d/src/RT/MenuStateRT.generated.ts
+  var MenuStateRTBase = class extends Laya.Scene {
+  };
+  __name(MenuStateRTBase, "MenuStateRTBase");
+
+  // E:/projects/laya3/demo_0_2d/src/RT/MenuStateRT.ts
+  var __decorate2 = __$decorate("7bab09c8-e030-48f6-9b0e-c7b8586ed970", "../src/RT/MenuStateRT.ts");
   var { regClass: regClass2, property: property2 } = Laya;
-  var Main = /* @__PURE__ */ __name(class Main2 extends MainBase {
-  }, "Main");
-  Main = __decorate2([
+  var MenuStateRT = /* @__PURE__ */ __name(class MenuStateRT2 extends MenuStateRTBase {
+    onAwake() {
+      let preLoad = [
+        "resources/icon/progress.png",
+        "resources/icon/progress$bar.png",
+        "resources/bg/MAIN_MENU_BG.png",
+        "resources/icon/BTN_START.png",
+        "resources/icon/BTN_START_TOUCH.png"
+      ];
+      Laya.loader.load(preLoad).then(() => {
+        let resources = [
+          { url: "ScenePlay.ls", type: Laya.Loader.HIERARCHY },
+          "resources/icon/BTN_NEXT_LEVEL_TOUCH.png",
+          "resources/icon/BTN_NEXT_LEVEL.png",
+          "resources/icon/BTN_GAME_BACK_TOUCH.png",
+          "resources/icon/BTN_GAME_BACK.png",
+          "resources/icon/BTN_MAIN_MENU_ICON_TOUCH.png",
+          "resources/icon/BTN_MAIN_MENU_ICON.png",
+          "resources/icon/BTN_PAUSE_TOUCH.png",
+          "resources/icon/BTN_PAUSE.png",
+          "resources/icon/TIME__FULL.png",
+          "resources/icon/TIME_EMPTY.png"
+        ];
+        let maxNum = 32;
+        for (let i = 1; i <= maxNum; i++) {
+          resources.push(`resources/farm/${i}.png`);
+          resources.push(`resources/farm/${i}_touch.png`);
+        }
+        Laya.loader.load(resources, null, Laya.Handler.create(this, this.recordProgress, null, false)).then(() => {
+          this.Btn_start.visible = true;
+          this.Btn_start.on(Laya.Event.CLICK, this, this.startGame);
+        });
+      });
+    }
+    startGame() {
+      this.Btn_start.skin = "resources/icon/BTN_START_TOUCH.png";
+      Laya.timer.once(200, this, () => {
+        Laya.Scene.open("ScenePlay.ls", true, GameConfig.Level[0]);
+      });
+    }
+    recordProgress(value) {
+      this.ProgressBar_load.value = value;
+      if (value >= 0.98) {
+        this.ProgressBar_load.visible = false;
+      }
+    }
+  }, "MenuStateRT");
+  MenuStateRT = __decorate2([
     regClass2()
-  ], Main);
+  ], MenuStateRT);
+
+  // E:/projects/laya3/demo_0_2d/src/RT/PlayStateRT.generated.ts
+  var PlayStateRTBase = class extends Laya.Scene {
+  };
+  __name(PlayStateRTBase, "PlayStateRTBase");
+
+  // E:/projects/laya3/demo_0_2d/src/RT/PlayStateRT.ts
+  var __decorate3 = __$decorate("d1abb8db-12fd-4313-b798-1c4e6df7e9d2", "../src/RT/PlayStateRT.ts");
+  var { regClass: regClass3 } = Laya;
+  var PlayStateRT = /* @__PURE__ */ __name(class PlayStateRT2 extends PlayStateRTBase {
+    onOpened(param) {
+      this.bm = new BoardManager();
+      this.Board.addComponentInstance(this.bm);
+      this.bm.generateBoard(param.col, param.row, param.gridWidth, param.gridSpace, param.limitTime);
+      this.Button_menu.on(Laya.Event.CLICK, this, () => {
+        this.bm.generateBoard(param.col, param.row, param.gridWidth, param.gridSpace, param.limitTime);
+      });
+      this.originLength = this.Sprite_mask.width;
+      Laya.stage.on("time", this, (leftTime) => {
+        this.Sprite_mask.width = leftTime * this.originLength;
+        if (this.Sprite_mask.width <= 0) {
+          console.log("GameOver");
+        }
+      });
+    }
+  }, "PlayStateRT");
+  PlayStateRT = __decorate3([
+    regClass3()
+  ], PlayStateRT);
 })();
 //# sourceMappingURL=bundle.js.map
