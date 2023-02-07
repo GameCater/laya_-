@@ -26,17 +26,18 @@ export class BoardManager extends Laya.Script {
 
     override onAwake(): void {
         this.board = this.owner as Laya.List;
+        this.board.itemRender = RenderItem;
         Laya.stage.on(GameConfig.Message.PAUSED, (isPaused: boolean) => {
             this.paused = isPaused;
         });
     }
 
     onEnable() {
-        console.log('board enabled');
+
+        // console.log('board enabled');
         this.isGameover = false;
         this.paused = false;
         this.win = false;
-        
     }
 
     onUpdate(): void {
@@ -61,9 +62,8 @@ export class BoardManager extends Laya.Script {
     
     public generateBoard(col: number, row: number, gridWidth: number, gridSpace: number, limitTime: number) {
 
-        console.log('generate');
+        // console.log('generate');
         
-
         this.col = col + 2;
         this.row = row + 2;
         this.imgHeight = this.imgWidth = gridWidth;
@@ -72,10 +72,16 @@ export class BoardManager extends Laya.Script {
         this.limitTime = limitTime * 60 * 1000;
         this.currentTime = 0;
 
-        // this.board.renderHandler = Laya.Handler.create(this, (cell: Laya.Box) => {
-        //     cell.width = this.imgWidth;
-        //     cell.height = this.imgHeight;
-        // }, null, false);
+        this.board.renderHandler = Laya.Handler.create(this, (cell: Laya.Image, index: number) => {
+            let p = Point.transformIdx2Point(index, this.col);
+            cell.y = (gridWidth + gridSpace) * p.x;
+            cell.x = (gridWidth + gridSpace) * p.y;
+            
+        }, null, false);
+
+        const data = generateListData(this.row, this.col, gridWidth, gridSpace);        
+        this.board.array = data;
+        this.total = (this.col - 2) * (this.row - 2);
 
         let width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceX;
         let height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
@@ -87,18 +93,17 @@ export class BoardManager extends Laya.Script {
         this.board.spaceX = this.board.spaceY = this.gridSpace;
         this.board.x = Math.floor(Math.abs(Laya.stage.width - width) / 2);
         
-        const data = generateListData(this.row, this.col);
-        this.board.array = data;
-        this.total = (this.col - 2) * (this.row - 2);
-
-        // this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
+        
+        this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
 
         // 触发 onEnabled
         this.enabled = true;
+
     }
 
     private onItemSelect(idx: number): void {
         const item = this.board.array[idx];
+        
         if (item.listItemImg.skin) {
             this.selected.push(idx);
             if (this.selected.length > 2) {
@@ -210,13 +215,12 @@ export class BoardManager extends Laya.Script {
      * @returns 两个连接点
      */
     private matchBlockTwo(src: Point, dest: Point): Point[] {
-        console.log(src, dest);
         
         if (this.total === 0) return null;
-        if (src.x < 0 || src.x > this.col) return null;
-        if (src.y < 0 || src.y > this.row) return null;
-        if (dest.x < 0 || dest.x > this.col) return null;
-        if (dest.y < 0 || dest.y > this.row) return null;
+        if (src.x < 0 || src.x > this.row) return null;
+        if (src.y < 0 || src.y > this.col) return null;
+        if (dest.x < 0 || dest.x > this.row) return null;
+        if (dest.y < 0 || dest.y > this.col) return null;
 
         if (this.matchBlock(src, dest)) {
             return [];
@@ -325,5 +329,24 @@ class Point {
 
     static transformPoint2Idx(p: Point, col: number): number {
         return p.x * col + p.y;
+    }
+}
+
+class RenderItem extends Laya.Image{
+
+    private _data: any;
+    get dataSource() {
+        return this._data;
+    }
+
+    set dataSource(data: any) {        
+        this._data = data.listItemImg;
+        this.init(this._data);
+    }
+
+    private init(data: { skin: string, width: number }) {
+
+        this.skin = data.skin;
+        this.width = this.height = data.width;
     }
 }

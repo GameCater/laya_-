@@ -3,7 +3,7 @@
  * @param {*} row 列表列数
  * @param {*} col 列表行数
  */
-function generateListData(row, col) {
+function generateListData(row, col, gridWidth, gridSpace) {
     const listData = new Array(row * col);
     // 列表实际的显示内容的行列数
     const realRow = row - 2, realCol = col - 2;
@@ -33,8 +33,10 @@ function generateListData(row, col) {
             if (n === 0 || n === row - 1 || m === 0 || m === col - 1) {
                 const item = {
                     listItemImg: {
-                        skin: ''
-                    }
+                        skin: '',
+                        width: gridWidth,
+                        space: gridSpace,
+                    },
                 };
                 item.listItemImg.skin = '';
                 listData[idx] = item;
@@ -42,7 +44,9 @@ function generateListData(row, col) {
             }
             const item = {
                 listItemImg: {
-                    skin: ''
+                    skin: '',
+                    width: gridWidth,
+                    space: gridSpace,
                 }
             };
             item.listItemImg.skin = `resources/farm/${temp[num ++]}.png`;

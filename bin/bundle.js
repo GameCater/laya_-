@@ -40,9 +40,9 @@ function __$decorate(assetId, codePath) {
   };
   __name(GameConfig, "GameConfig");
   GameConfig.Level = [
-    { rank: 1, col: 4, row: 4, gridWidth: 80, gridSpace: 2, limitTime: 5 },
-    { rank: 2, col: 9, row: 12, gridWidth: 60, gridSpace: 2, limitTime: 10 },
-    { rank: 3, col: 12, row: 16, gridWidth: 46, gridSpace: 2, limitTime: 15 }
+    { rank: 1, col: 2, row: 2, gridWidth: 80, gridSpace: 2, limitTime: 5 },
+    { rank: 2, col: 2, row: 2, gridWidth: 60, gridSpace: 2, limitTime: 10 },
+    { rank: 3, col: 2, row: 2, gridWidth: 46, gridSpace: 2, limitTime: 15 }
   ];
   GameConfig.Message = {
     TIME: "leftTime",
@@ -52,7 +52,7 @@ function __$decorate(assetId, codePath) {
   };
 
   // E:/projects/laya3/demo_0_2d/src/tool/generateJson.js
-  function generateListData(row, col) {
+  function generateListData(row, col, gridWidth, gridSpace) {
     const listData = new Array(row * col);
     const realRow = row - 2, realCol = col - 2;
     if (realRow * realCol % 2)
@@ -75,7 +75,9 @@ function __$decorate(assetId, codePath) {
         if (n === 0 || n === row - 1 || m === 0 || m === col - 1) {
           const item2 = {
             listItemImg: {
-              skin: ""
+              skin: "",
+              width: gridWidth,
+              space: gridSpace
             }
           };
           item2.listItemImg.skin = "";
@@ -84,7 +86,9 @@ function __$decorate(assetId, codePath) {
         }
         const item = {
           listItemImg: {
-            skin: ""
+            skin: "",
+            width: gridWidth,
+            space: gridSpace
           }
         };
         item.listItemImg.skin = `resources/farm/${temp[num++]}.png`;
@@ -114,12 +118,12 @@ function __$decorate(assetId, codePath) {
     }
     onAwake() {
       this.board = this.owner;
+      this.board.itemRender = RenderItem;
       Laya.stage.on(GameConfig.Message.PAUSED, (isPaused) => {
         this.paused = isPaused;
       });
     }
     onEnable() {
-      console.log("board enabled");
       this.isGameover = false;
       this.paused = false;
       this.win = false;
@@ -142,13 +146,20 @@ function __$decorate(assetId, codePath) {
       }
     }
     generateBoard(col, row, gridWidth, gridSpace, limitTime) {
-      console.log("generate");
       this.col = col + 2;
       this.row = row + 2;
       this.imgHeight = this.imgWidth = gridWidth;
       this.gridSpace = gridSpace;
       this.limitTime = limitTime * 60 * 1e3;
       this.currentTime = 0;
+      this.board.renderHandler = Laya.Handler.create(this, (cell, index) => {
+        let p = Point.transformIdx2Point(index, this.col);
+        cell.y = (gridWidth + gridSpace) * p.x;
+        cell.x = (gridWidth + gridSpace) * p.y;
+      }, null, false);
+      const data = generateJson_default(this.row, this.col, gridWidth, gridSpace);
+      this.board.array = data;
+      this.total = (this.col - 2) * (this.row - 2);
       let width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceX;
       let height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
       this.board.width = width;
@@ -157,9 +168,7 @@ function __$decorate(assetId, codePath) {
       this.board.repeatY = this.row;
       this.board.spaceX = this.board.spaceY = this.gridSpace;
       this.board.x = Math.floor(Math.abs(Laya.stage.width - width) / 2);
-      const data = generateJson_default(this.row, this.col);
-      this.board.array = data;
-      this.total = (this.col - 2) * (this.row - 2);
+      this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
       this.enabled = true;
     }
     onItemSelect(idx) {
@@ -234,16 +243,15 @@ function __$decorate(assetId, codePath) {
       return null;
     }
     matchBlockTwo(src, dest) {
-      console.log(src, dest);
       if (this.total === 0)
         return null;
-      if (src.x < 0 || src.x > this.col)
+      if (src.x < 0 || src.x > this.row)
         return null;
-      if (src.y < 0 || src.y > this.row)
+      if (src.y < 0 || src.y > this.col)
         return null;
-      if (dest.x < 0 || dest.x > this.col)
+      if (dest.x < 0 || dest.x > this.row)
         return null;
-      if (dest.y < 0 || dest.y > this.row)
+      if (dest.y < 0 || dest.y > this.col)
         return null;
       if (this.matchBlock(src, dest)) {
         return [];
@@ -344,6 +352,20 @@ function __$decorate(assetId, codePath) {
     }
   };
   __name(Point, "Point");
+  var RenderItem = class extends Laya.Image {
+    get dataSource() {
+      return this._data;
+    }
+    set dataSource(data) {
+      this._data = data.listItemImg;
+      this.init(this._data);
+    }
+    init(data) {
+      this.skin = data.skin;
+      this.width = this.height = data.width;
+    }
+  };
+  __name(RenderItem, "RenderItem");
 
   // E:/projects/laya3/demo_0_2d/src/RT/MenuStateRT.generated.ts
   var MenuStateRTBase = class extends Laya.Scene {
@@ -458,6 +480,12 @@ function __$decorate(assetId, codePath) {
       Laya.Scene.open("SceneMenu.ls", true);
     }
     winLevel() {
+      let nextLevelIndex = this.currentLevel;
+      this.currentLevel += 1;
+      if (nextLevelIndex >= GameConfig.Level.length) {
+        this.gameover();
+        return;
+      }
       this.Button_menu.offAll(Laya.Event.CLICK);
       this.Button_pause.offAll(Laya.Event.CLICK);
       this.Board.visible = false;
@@ -471,11 +499,6 @@ function __$decorate(assetId, codePath) {
         this.Board.visible = true;
         this.Button_menu.on(Laya.Event.CLICK, this, this.backMenu);
         this.Button_pause.on(Laya.Event.CLICK, this, this.pauseGame);
-        let nextLevelIndex = this.currentLevel - 1 + 1;
-        if (nextLevelIndex >= GameConfig.Level.length) {
-          this.gameover();
-          return;
-        }
         this.bm.enabled = false;
         let nextLevelInfo = GameConfig.Level[nextLevelIndex];
         this.bm.generateBoard(nextLevelInfo.col, nextLevelInfo.row, nextLevelInfo.gridWidth, nextLevelInfo.gridSpace, nextLevelInfo.limitTime);

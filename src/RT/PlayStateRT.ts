@@ -10,7 +10,7 @@ export class PlayStateRT extends PlayStateRTBase {
     private originLength: number;
     private currentLevel: number = 0;
 
-    onOpened(param: any): void {
+    onOpened(param: any): void {        
         this.currentLevel = param.rank;
 
         this.Button_menu.skins = [
@@ -25,8 +25,7 @@ export class PlayStateRT extends PlayStateRTBase {
         this.Button_pause.on(Laya.Event.CLICK, this, this.pauseGame);
 
 
-        // this.bm = new BoardManager(param.col, param.row, param.gridWidth, param.gridSpace, param.limitTime);
-        this.bm = new BoardManager();
+        this.bm = new BoardManager(); 
         this.Board.addComponentInstance(this.bm);
         this.bm.generateBoard(param.col, param.row, param.gridWidth, param.gridSpace, param.limitTime);
 
@@ -51,6 +50,15 @@ export class PlayStateRT extends PlayStateRTBase {
 
     private winLevel() {
 
+        // 是否通关
+        let nextLevelIndex = this.currentLevel;
+        this.currentLevel += 1;
+        if (nextLevelIndex >= GameConfig.Level.length) {
+            // todo
+            this.gameover();
+            return;
+        }
+
         // 清理点击事件
         this.Button_menu.offAll(Laya.Event.CLICK);
         this.Button_pause.offAll(Laya.Event.CLICK);
@@ -61,6 +69,7 @@ export class PlayStateRT extends PlayStateRTBase {
             'resources/icon/BTN_NEXT_LEVEL.png',
             'resources/icon/BTN_NEXT_LEVEL_TOUCH.png',
         ];
+
         this.Button_nextLevel.on(Laya.Event.CLICK, this, () => {
 
             this.Dialog_nextLevel.visible = false;
@@ -68,14 +77,7 @@ export class PlayStateRT extends PlayStateRTBase {
             this.Button_menu.on(Laya.Event.CLICK, this, this.backMenu);
             this.Button_pause.on(Laya.Event.CLICK, this, this.pauseGame);
 
-            let nextLevelIndex = this.currentLevel - 1 + 1;
-            // 通关所有关卡
-            if (nextLevelIndex >= GameConfig.Level.length) {
-                // todo
-                this.gameover();
-                return;
-            }
-
+            // 去下一关
             this.bm.enabled = false;
             let nextLevelInfo = GameConfig.Level[nextLevelIndex];
             this.bm.generateBoard(nextLevelInfo.col, nextLevelInfo.row, nextLevelInfo.gridWidth, nextLevelInfo.gridSpace, nextLevelInfo.limitTime);
@@ -99,7 +101,6 @@ export class PlayStateRT extends PlayStateRTBase {
         });
 
     }
-
 
     private pauseGame() {
         console.log('paused');
