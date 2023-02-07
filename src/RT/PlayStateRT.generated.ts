@@ -12,5 +12,10 @@ export class PlayStateRTBase extends Laya.Scene {
     public Image_timeBefore: Laya.Image;
     public Sprite_mask: Laya.Sprite;
     public Image_score: Laya.Image;
+    public Dialog_nextLevel: Laya.Dialog;
+    public Button_nextLevel: Laya.Button;
+    public Dialog_gameOver: Laya.Dialog;
+    public Button_backHome: Laya.Button;
+    public Box_pause: Laya.Box;
 }
 

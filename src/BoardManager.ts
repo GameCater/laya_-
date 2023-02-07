@@ -1,4 +1,5 @@
 // declare function generateListData(row: number, col: number): [];
+import { GameConfig } from './GameConfig';
 import generateListData from './tool/generateJson';
 
 const { regClass, property } = Laya;
@@ -7,29 +8,62 @@ const { regClass, property } = Laya;
 export class BoardManager extends Laya.Script {
     public col: number;
     public row: number;
-
     private imgWidth: number;
     private imgHeight: number;
     private gridSpace: number;
 
     private board: Laya.List;
     private selected: number[] = [];
+    // Board 剩余元素
     private total: number;
 
     private limitTime: number;
     private currentTime: number = 0;
+    private isGameover: boolean = false;
+
+    private paused: boolean = false;
+    private win: boolean = false;
+
+    override onAwake(): void {
+        this.board = this.owner as Laya.List;
+        Laya.stage.on(GameConfig.Message.PAUSED, (isPaused: boolean) => {
+            this.paused = isPaused;
+        });
+    }
 
     onEnable() {
-        this.board = this.owner as Laya.List;
+        console.log('board enabled');
+        this.isGameover = false;
+        this.paused = false;
+        this.win = false;
+        
     }
 
     onUpdate(): void {
+        if (this.isGameover || this.paused || this.win) return;
+
         this.currentTime += Laya.timer.delta;
         let leftTime = (1 - this.currentTime / this.limitTime);
-        Laya.stage.event('time', leftTime);
+        Laya.stage.event(GameConfig.Message.TIME, leftTime);
+        if (leftTime <= 0) {
+            this.isGameover = true;
+            this.currentTime = this.limitTime;
+            Laya.stage.event(GameConfig.Message.GAMEOVER);
+            return;
+        }
+
+        // 判断通关
+        if (this.total === 0) {
+            this.win = true;
+            Laya.stage.event(GameConfig.Message.WIN);
+        }
     }
     
     public generateBoard(col: number, row: number, gridWidth: number, gridSpace: number, limitTime: number) {
+
+        console.log('generate');
+        
+
         this.col = col + 2;
         this.row = row + 2;
         this.imgHeight = this.imgWidth = gridWidth;
@@ -38,34 +72,29 @@ export class BoardManager extends Laya.Script {
         this.limitTime = limitTime * 60 * 1000;
         this.currentTime = 0;
 
-        this.board.renderHandler = Laya.Handler.create(this, (cell: Laya.Box) => {
-            cell.width = this.imgWidth;
-            cell.height = this.imgHeight;
-        }, null, false);
+        // this.board.renderHandler = Laya.Handler.create(this, (cell: Laya.Box) => {
+        //     cell.width = this.imgWidth;
+        //     cell.height = this.imgHeight;
+        // }, null, false);
 
         let width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceX;
         let height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
-        let box = this.board.getChildAt(0) as Laya.Box;    
         this.board.width = width;
         this.board.height = height;
 
-        this.board.repeatX = this.col;
+        this.board.repeatX = this.col; 
         this.board.repeatY = this.row;
         this.board.spaceX = this.board.spaceY = this.gridSpace;
         this.board.x = Math.floor(Math.abs(Laya.stage.width - width) / 2);
-
-        // this.board.cells.forEach((c) => {
-        //     (c.parent as Laya.Box).width = this.imgWidth;
-        //     (c.parent as Laya.Box).height = this.imgHeight;
-        //     c.width = this.imgWidth;
-        //     c.height = this.imgHeight;
-        // })
         
         const data = generateListData(this.row, this.col);
         this.board.array = data;
         this.total = (this.col - 2) * (this.row - 2);
 
-        this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
+        // this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
+
+        // 触发 onEnabled
+        this.enabled = true;
     }
 
     private onItemSelect(idx: number): void {

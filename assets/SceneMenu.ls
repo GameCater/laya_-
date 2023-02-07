@@ -46,6 +46,7 @@
       "y": 1154,
       "width": 400,
       "height": 30,
+      "visible": false,
       "centerX": 0,
       "skin": "res://c0f362f3-527d-4b3c-b170-26633e567a68",
       "value": 0

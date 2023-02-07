@@ -35,6 +35,22 @@ function __$decorate(assetId, codePath) {
   var __defProp = Object.defineProperty;
   var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
+  // E:/projects/laya3/demo_0_2d/src/GameConfig.ts
+  var GameConfig = class {
+  };
+  __name(GameConfig, "GameConfig");
+  GameConfig.Level = [
+    { rank: 1, col: 4, row: 4, gridWidth: 80, gridSpace: 2, limitTime: 5 },
+    { rank: 2, col: 9, row: 12, gridWidth: 60, gridSpace: 2, limitTime: 10 },
+    { rank: 3, col: 12, row: 16, gridWidth: 46, gridSpace: 2, limitTime: 15 }
+  ];
+  GameConfig.Message = {
+    TIME: "leftTime",
+    GAMEOVER: "gameOver",
+    PAUSED: "gamePaused",
+    WIN: "gameWin"
+  };
+
   // E:/projects/laya3/demo_0_2d/src/tool/generateJson.js
   function generateListData(row, col) {
     const listData = new Array(row * col);
@@ -92,29 +108,49 @@ function __$decorate(assetId, codePath) {
       super(...arguments);
       this.selected = [];
       this.currentTime = 0;
+      this.isGameover = false;
+      this.paused = false;
+      this.win = false;
+    }
+    onAwake() {
+      this.board = this.owner;
+      Laya.stage.on(GameConfig.Message.PAUSED, (isPaused) => {
+        this.paused = isPaused;
+      });
     }
     onEnable() {
-      this.board = this.owner;
+      console.log("board enabled");
+      this.isGameover = false;
+      this.paused = false;
+      this.win = false;
     }
     onUpdate() {
+      if (this.isGameover || this.paused || this.win)
+        return;
       this.currentTime += Laya.timer.delta;
       let leftTime = 1 - this.currentTime / this.limitTime;
-      Laya.stage.event("time", leftTime);
+      Laya.stage.event(GameConfig.Message.TIME, leftTime);
+      if (leftTime <= 0) {
+        this.isGameover = true;
+        this.currentTime = this.limitTime;
+        Laya.stage.event(GameConfig.Message.GAMEOVER);
+        return;
+      }
+      if (this.total === 0) {
+        this.win = true;
+        Laya.stage.event(GameConfig.Message.WIN);
+      }
     }
     generateBoard(col, row, gridWidth, gridSpace, limitTime) {
+      console.log("generate");
       this.col = col + 2;
       this.row = row + 2;
       this.imgHeight = this.imgWidth = gridWidth;
       this.gridSpace = gridSpace;
       this.limitTime = limitTime * 60 * 1e3;
       this.currentTime = 0;
-      this.board.renderHandler = Laya.Handler.create(this, (cell) => {
-        cell.width = this.imgWidth;
-        cell.height = this.imgHeight;
-      }, null, false);
       let width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceX;
       let height = this.row * this.imgHeight + (this.row - 1) * this.board.spaceY;
-      let box = this.board.getChildAt(0);
       this.board.width = width;
       this.board.height = height;
       this.board.repeatX = this.col;
@@ -124,7 +160,7 @@ function __$decorate(assetId, codePath) {
       const data = generateJson_default(this.row, this.col);
       this.board.array = data;
       this.total = (this.col - 2) * (this.row - 2);
-      this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
+      this.enabled = true;
     }
     onItemSelect(idx) {
       const item = this.board.array[idx];
@@ -309,16 +345,6 @@ function __$decorate(assetId, codePath) {
   };
   __name(Point, "Point");
 
-  // E:/projects/laya3/demo_0_2d/src/GameConfig.ts
-  var GameConfig = class {
-  };
-  __name(GameConfig, "GameConfig");
-  GameConfig.Level = [
-    { rank: 1, col: 6, row: 8, gridWidth: 80, gridSpace: 2, limitTime: 5 },
-    { rank: 2, col: 9, row: 12, gridWidth: 60, gridSpace: 2, limitTime: 10 },
-    { rank: 3, col: 12, row: 16, gridWidth: 46, gridSpace: 2, limitTime: 15 }
-  ];
-
   // E:/projects/laya3/demo_0_2d/src/RT/MenuStateRT.generated.ts
   var MenuStateRTBase = class extends Laya.Scene {
   };
@@ -328,6 +354,10 @@ function __$decorate(assetId, codePath) {
   var __decorate2 = __$decorate("7bab09c8-e030-48f6-9b0e-c7b8586ed970", "../src/RT/MenuStateRT.ts");
   var { regClass: regClass2, property: property2 } = Laya;
   var MenuStateRT = /* @__PURE__ */ __name(class MenuStateRT2 extends MenuStateRTBase {
+    constructor() {
+      super(...arguments);
+      this.resourcesLoaded = false;
+    }
     onAwake() {
       let preLoad = [
         "resources/icon/progress.png",
@@ -348,21 +378,29 @@ function __$decorate(assetId, codePath) {
           "resources/icon/BTN_PAUSE_TOUCH.png",
           "resources/icon/BTN_PAUSE.png",
           "resources/icon/TIME__FULL.png",
-          "resources/icon/TIME_EMPTY.png"
+          "resources/icon/TIME_EMPTY.png",
+          "resources/icon/BTN.png",
+          "resources/icon/BTN_TOUCH.png"
         ];
         let maxNum = 32;
         for (let i = 1; i <= maxNum; i++) {
           resources.push(`resources/farm/${i}.png`);
           resources.push(`resources/farm/${i}_touch.png`);
         }
+        this.ProgressBar_load.visible = true;
         Laya.loader.load(resources, null, Laya.Handler.create(this, this.recordProgress, null, false)).then(() => {
+          this.ProgressBar_load.visible = false;
+          this.resourcesLoaded = true;
+          this.Btn_start.skins = [
+            "resources/icon/BTN_START.png",
+            "resources/icon/BTN_START_TOUCH.png"
+          ];
           this.Btn_start.visible = true;
           this.Btn_start.on(Laya.Event.CLICK, this, this.startGame);
         });
       });
     }
     startGame() {
-      this.Btn_start.skin = "resources/icon/BTN_START_TOUCH.png";
       Laya.timer.once(200, this, () => {
         Laya.Scene.open("ScenePlay.ls", true, GameConfig.Level[0]);
       });
@@ -372,6 +410,9 @@ function __$decorate(assetId, codePath) {
       if (value >= 0.98) {
         this.ProgressBar_load.visible = false;
       }
+    }
+    onClosed(type) {
+      Laya.stage.offAll();
     }
   }, "MenuStateRT");
   MenuStateRT = __decorate2([
@@ -387,20 +428,95 @@ function __$decorate(assetId, codePath) {
   var __decorate3 = __$decorate("d1abb8db-12fd-4313-b798-1c4e6df7e9d2", "../src/RT/PlayStateRT.ts");
   var { regClass: regClass3 } = Laya;
   var PlayStateRT = /* @__PURE__ */ __name(class PlayStateRT2 extends PlayStateRTBase {
+    constructor() {
+      super(...arguments);
+      this.currentLevel = 0;
+    }
     onOpened(param) {
+      this.currentLevel = param.rank;
+      this.Button_menu.skins = [
+        "resources/icon/BTN_MAIN_MENU_ICON.png",
+        "resources/icon/BTN_MAIN_MENU_ICON_TOUCH.png"
+      ];
+      this.Button_pause.skins = [
+        "resources/icon/BTN_PAUSE.png",
+        "resources/icon/BTN_PAUSE_TOUCH.png"
+      ];
+      this.Button_menu.on(Laya.Event.CLICK, this, this.backMenu);
+      this.Button_pause.on(Laya.Event.CLICK, this, this.pauseGame);
       this.bm = new BoardManager();
       this.Board.addComponentInstance(this.bm);
       this.bm.generateBoard(param.col, param.row, param.gridWidth, param.gridSpace, param.limitTime);
-      this.Button_menu.on(Laya.Event.CLICK, this, () => {
-        this.bm.generateBoard(param.col, param.row, param.gridWidth, param.gridSpace, param.limitTime);
-      });
       this.originLength = this.Sprite_mask.width;
-      Laya.stage.on("time", this, (leftTime) => {
+      Laya.stage.on(GameConfig.Message.TIME, this, (leftTime) => {
         this.Sprite_mask.width = leftTime * this.originLength;
-        if (this.Sprite_mask.width <= 0) {
-          console.log("GameOver");
-        }
       });
+      Laya.stage.on(GameConfig.Message.GAMEOVER, this, this.gameover);
+      Laya.stage.on(GameConfig.Message.WIN, this, this.winLevel);
+    }
+    backMenu() {
+      Laya.Scene.open("SceneMenu.ls", true);
+    }
+    winLevel() {
+      this.Button_menu.offAll(Laya.Event.CLICK);
+      this.Button_pause.offAll(Laya.Event.CLICK);
+      this.Board.visible = false;
+      this.Dialog_nextLevel.visible = true;
+      this.Button_nextLevel.skins = [
+        "resources/icon/BTN_NEXT_LEVEL.png",
+        "resources/icon/BTN_NEXT_LEVEL_TOUCH.png"
+      ];
+      this.Button_nextLevel.on(Laya.Event.CLICK, this, () => {
+        this.Dialog_nextLevel.visible = false;
+        this.Board.visible = true;
+        this.Button_menu.on(Laya.Event.CLICK, this, this.backMenu);
+        this.Button_pause.on(Laya.Event.CLICK, this, this.pauseGame);
+        let nextLevelIndex = this.currentLevel - 1 + 1;
+        if (nextLevelIndex >= GameConfig.Level.length) {
+          this.gameover();
+          return;
+        }
+        this.bm.enabled = false;
+        let nextLevelInfo = GameConfig.Level[nextLevelIndex];
+        this.bm.generateBoard(nextLevelInfo.col, nextLevelInfo.row, nextLevelInfo.gridWidth, nextLevelInfo.gridSpace, nextLevelInfo.limitTime);
+      });
+    }
+    gameover() {
+      this.Button_menu.offAll(Laya.Event.CLICK);
+      this.Button_pause.offAll(Laya.Event.CLICK);
+      this.Board.visible = false;
+      this.Dialog_gameOver.visible = true;
+      this.Button_backHome.skins = [
+        "resources/icon/BTN.png",
+        "resources/icon/BTN_TOUCH.png"
+      ];
+      this.Button_backHome.on(Laya.Event.CLICK, () => {
+        Laya.Scene.open("SceneMenu.ls", true);
+      });
+    }
+    pauseGame() {
+      console.log("paused");
+      this.Board.visible = false;
+      Laya.stage.event(GameConfig.Message.PAUSED, true);
+      this.Box_pause.visible = true;
+      this.Button_pause.skins = [
+        "resources/icon/BTN_GAME_BACK.png",
+        "resources/icon/BTN_GAME_BACK_TOUCH.png"
+      ];
+      this.Button_pause.off(Laya.Event.CLICK, this, this.pauseGame);
+      this.Button_pause.on(Laya.Event.CLICK, this, this.resumeGame);
+    }
+    resumeGame() {
+      console.log("resumed");
+      Laya.stage.event(GameConfig.Message.PAUSED, false);
+      this.Board.visible = true;
+      this.Box_pause.visible = false;
+      this.Button_pause.skins = [
+        "resources/icon/BTN_PAUSE.png",
+        "resources/icon/BTN_PAUSE_TOUCH.png"
+      ];
+      this.Button_pause.off(Laya.Event.CLICK, this, this.resumeGame);
+      this.Button_pause.on(Laya.Event.CLICK, this, this.pauseGame);
     }
   }, "PlayStateRT");
   PlayStateRT = __decorate3([
