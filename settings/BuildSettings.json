@@ -53,5 +53,9 @@
     "compressEnable": false,
     "useComponentFunc": false
   },
-  "name": "demo_0_2d"
+  "name": "linkGame",
+  "startupScene": "res://4b578665-8a4c-478c-a60a-e7f48115a3af",
+  "includedScenes": [
+    "res://9b931ecf-fde9-44dd-acf3-15f8dc807965"
+  ]
 }

@@ -1,9 +1,9 @@
 export class GameConfig {
     // 游戏关卡信息
     public static Level: LevelInfo[] = [
-        { rank: 1, col: 2, row: 2, gridWidth: 80, gridSpace: 2 ,limitTime: 5 }, // 6 8  
-        { rank: 2, col: 2, row: 2, gridWidth: 60, gridSpace: 2 ,limitTime: 10 }, // 9 12
-        { rank: 3, col: 2, row: 2, gridWidth: 46, gridSpace: 2 ,limitTime: 15 }, // 12 16
+        { rank: 1, col: 6, row: 8, gridWidth: 80, gridSpace: 2 ,limitTime: 5 }, // 6 8  
+        { rank: 2, col: 9, row: 12, gridWidth: 60, gridSpace: 2 ,limitTime: 10 }, // 9 12
+        { rank: 3, col: 12, row: 16, gridWidth: 46, gridSpace: 2 ,limitTime: 15 }, // 12 16
     ]
 
     // 游戏消息通信

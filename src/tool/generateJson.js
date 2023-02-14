@@ -9,6 +9,7 @@ function generateListData(row, col, gridWidth, gridSpace) {
     const realRow = row - 2, realCol = col - 2;
     if (realRow * realCol % 2) 
         throw new Error('列表项个数为奇数');
+    
 
     let temp = [], total = realRow * realCol, flags = [];
     for (let i = 0; i < total / 2; i ++) {
@@ -54,10 +55,10 @@ function generateListData(row, col, gridWidth, gridSpace) {
         }
     }
     return listData;
-} 
+}
 
 function randNumber(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export default generateListData;
+export default generateListData; 

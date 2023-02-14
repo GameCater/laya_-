@@ -33,11 +33,11 @@ export class BoardManager extends Laya.Script {
     }
 
     onEnable() {
-
-        // console.log('board enabled');
+        console.log('board enabled');
         this.isGameover = false;
         this.paused = false;
         this.win = false;
+        // this.board.visible = !this.board.visible;
     }
 
     onUpdate(): void {
@@ -62,7 +62,7 @@ export class BoardManager extends Laya.Script {
     
     public generateBoard(col: number, row: number, gridWidth: number, gridSpace: number, limitTime: number) {
 
-        // console.log('generate');
+        console.log('generate');
         
         this.col = col + 2;
         this.row = row + 2;
@@ -72,6 +72,19 @@ export class BoardManager extends Laya.Script {
         this.limitTime = limitTime * 60 * 1000;
         this.currentTime = 0;
 
+        const data = generateListData(this.row, this.col, gridWidth, gridSpace);
+        this.board.array = data;
+        this.total = (this.col - 2) * (this.row - 2);
+        
+        if (this.checkIsValid(data)) {
+            this.board.visible = true;
+        } else {
+            // this.board.visible = false;
+            this.total = (this.col - 2) * (this.row - 2);
+            this.generateBoard(col, row, gridWidth, gridSpace, limitTime);
+            return;
+        }
+
         this.board.renderHandler = Laya.Handler.create(this, (cell: Laya.Image, index: number) => {
             let p = Point.transformIdx2Point(index, this.col);
             cell.y = (gridWidth + gridSpace) * p.x;
@@ -79,7 +92,7 @@ export class BoardManager extends Laya.Script {
             
         }, null, false);
 
-        const data = generateListData(this.row, this.col, gridWidth, gridSpace);        
+        
         this.board.array = data;
         this.total = (this.col - 2) * (this.row - 2);
 
@@ -303,6 +316,10 @@ export class BoardManager extends Laya.Script {
         return this.board.array[idx].listItemImg.skin;
     }
 
+    private setImg(idx: number, url: string): void {
+        this.board.array[idx].listItemImg.skin = url;
+    }
+
     // 消除匹配项
     private removeItems() {
         for (let i = 0; i < this.selected.length; i ++) {
@@ -310,6 +327,77 @@ export class BoardManager extends Laya.Script {
         }
         this.selected = [];
     }
+
+    // 检查生成的地图是否有解
+    private checkIsValid(data: any[]): boolean {
+
+        let items = new Array(this.row);
+        for (let i = 0; i <= items.length - 1; i ++) {
+            items[i] = new Array(this.col);
+            for (let j = 0; j <= items[i].length - 1; j ++) {
+                items[i][j] = 0;
+            }
+        }
+
+        let path = new Path();
+        let sequence = new Sequence((this.col -2) * (this.row - 2));
+
+        while (this.getHint(path)) {
+
+            let start = path.start, end = path.end;
+            let startIdx = Point.transformPoint2Idx(start, this.col),
+                endIdx = Point.transformPoint2Idx(end, this.col);
+            items[start.x][start.y] = this.getImg(startIdx);
+            items[end.x][end.y] = this.getImg(endIdx);
+
+            sequence.steps[sequence.index].x = startIdx;
+            sequence.steps[sequence.index ++].y = endIdx;
+
+            this.selected.push(startIdx);
+            this.selected.push(endIdx);
+
+            this.removeItems();
+            this.total -= 2;
+        }
+
+        // 已经没提示了， 但还没消完
+        if (this.total !== 0) {
+            
+            return false;
+        } else {
+            sequence.index = 0;
+
+            // 恢复
+            for (let i = 0; i < items.length; i ++) {
+                for (let j = 0; j < items[0].length; j ++) {
+                    if (items[i][j] !== 0) {
+                        this.setImg(Point.transformPoint2Idx(new Point(i, j), this.col), items[i][j]);
+                    }
+                }
+            }
+
+            return true;
+        }
+    }
+
+    // 提示
+    private getHint(path: Path): boolean {
+
+        for (let i = 0; i < this.col * this.row - 1; i ++) {
+            let src = Point.transformIdx2Point(i, this.col);
+            for (let j = i + 1; j < this.col * this.row; j ++) {
+                let dest = Point.transformIdx2Point(j, this.col);
+                if (this.getImg(i) !== '' && this.canRemove(i, j)) {
+
+                    path.start = src;
+                    path.end = dest;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
 }
 
 class Point {
@@ -329,6 +417,22 @@ class Point {
 
     static transformPoint2Idx(p: Point, col: number): number {
         return p.x * col + p.y;
+    }
+}
+
+class Path {
+    start: Point = new Point(0, 0);
+    end: Point = new Point(0, 0);
+}
+
+class Sequence {
+    steps: Point[];
+    index: number = 0;
+    constructor(size: number) {
+        this.steps = new Array(size);
+        for (let i = 0; i < this.steps.length; i ++) {
+            this.steps[i] = new Point();
+        }
     }
 }
 

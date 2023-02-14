@@ -40,9 +40,9 @@ function __$decorate(assetId, codePath) {
   };
   __name(GameConfig, "GameConfig");
   GameConfig.Level = [
-    { rank: 1, col: 2, row: 2, gridWidth: 80, gridSpace: 2, limitTime: 5 },
-    { rank: 2, col: 2, row: 2, gridWidth: 60, gridSpace: 2, limitTime: 10 },
-    { rank: 3, col: 2, row: 2, gridWidth: 46, gridSpace: 2, limitTime: 15 }
+    { rank: 1, col: 6, row: 8, gridWidth: 80, gridSpace: 2, limitTime: 5 },
+    { rank: 2, col: 9, row: 12, gridWidth: 60, gridSpace: 2, limitTime: 10 },
+    { rank: 3, col: 12, row: 16, gridWidth: 46, gridSpace: 2, limitTime: 15 }
   ];
   GameConfig.Message = {
     TIME: "leftTime",
@@ -124,6 +124,7 @@ function __$decorate(assetId, codePath) {
       });
     }
     onEnable() {
+      console.log("board enabled");
       this.isGameover = false;
       this.paused = false;
       this.win = false;
@@ -146,18 +147,28 @@ function __$decorate(assetId, codePath) {
       }
     }
     generateBoard(col, row, gridWidth, gridSpace, limitTime) {
+      console.log("generate");
       this.col = col + 2;
       this.row = row + 2;
       this.imgHeight = this.imgWidth = gridWidth;
       this.gridSpace = gridSpace;
       this.limitTime = limitTime * 60 * 1e3;
       this.currentTime = 0;
+      const data = generateJson_default(this.row, this.col, gridWidth, gridSpace);
+      this.board.array = data;
+      this.total = (this.col - 2) * (this.row - 2);
+      if (this.checkIsValid(data)) {
+        this.board.visible = true;
+      } else {
+        this.total = (this.col - 2) * (this.row - 2);
+        this.generateBoard(col, row, gridWidth, gridSpace, limitTime);
+        return;
+      }
       this.board.renderHandler = Laya.Handler.create(this, (cell, index) => {
         let p = Point.transformIdx2Point(index, this.col);
         cell.y = (gridWidth + gridSpace) * p.x;
         cell.x = (gridWidth + gridSpace) * p.y;
       }, null, false);
-      const data = generateJson_default(this.row, this.col, gridWidth, gridSpace);
       this.board.array = data;
       this.total = (this.col - 2) * (this.row - 2);
       let width = this.col * this.imgWidth + (this.col - 1) * this.board.spaceX;
@@ -326,11 +337,64 @@ function __$decorate(assetId, codePath) {
     getImg(idx) {
       return this.board.array[idx].listItemImg.skin;
     }
+    setImg(idx, url) {
+      this.board.array[idx].listItemImg.skin = url;
+    }
     removeItems() {
       for (let i = 0; i < this.selected.length; i++) {
         this.removeImg(this.selected[i]);
       }
       this.selected = [];
+    }
+    checkIsValid(data) {
+      let items = new Array(this.row);
+      for (let i = 0; i <= items.length - 1; i++) {
+        items[i] = new Array(this.col);
+        for (let j = 0; j <= items[i].length - 1; j++) {
+          items[i][j] = 0;
+        }
+      }
+      let path = new Path();
+      let sequence = new Sequence((this.col - 2) * (this.row - 2));
+      while (this.getHint(path)) {
+        let start = path.start, end = path.end;
+        let startIdx = Point.transformPoint2Idx(start, this.col), endIdx = Point.transformPoint2Idx(end, this.col);
+        items[start.x][start.y] = this.getImg(startIdx);
+        items[end.x][end.y] = this.getImg(endIdx);
+        sequence.steps[sequence.index].x = startIdx;
+        sequence.steps[sequence.index++].y = endIdx;
+        this.selected.push(startIdx);
+        this.selected.push(endIdx);
+        this.removeItems();
+        this.total -= 2;
+      }
+      if (this.total !== 0) {
+        return false;
+      } else {
+        sequence.index = 0;
+        for (let i = 0; i < items.length; i++) {
+          for (let j = 0; j < items[0].length; j++) {
+            if (items[i][j] !== 0) {
+              this.setImg(Point.transformPoint2Idx(new Point(i, j), this.col), items[i][j]);
+            }
+          }
+        }
+        return true;
+      }
+    }
+    getHint(path) {
+      for (let i = 0; i < this.col * this.row - 1; i++) {
+        let src = Point.transformIdx2Point(i, this.col);
+        for (let j = i + 1; j < this.col * this.row; j++) {
+          let dest = Point.transformIdx2Point(j, this.col);
+          if (this.getImg(i) !== "" && this.canRemove(i, j)) {
+            path.start = src;
+            path.end = dest;
+            return true;
+          }
+        }
+      }
+      return false;
     }
   }, "BoardManager");
   BoardManager = __decorate([
@@ -352,6 +416,23 @@ function __$decorate(assetId, codePath) {
     }
   };
   __name(Point, "Point");
+  var Path = class {
+    constructor() {
+      this.start = new Point(0, 0);
+      this.end = new Point(0, 0);
+    }
+  };
+  __name(Path, "Path");
+  var Sequence = class {
+    constructor(size) {
+      this.index = 0;
+      this.steps = new Array(size);
+      for (let i = 0; i < this.steps.length; i++) {
+        this.steps[i] = new Point();
+      }
+    }
+  };
+  __name(Sequence, "Sequence");
   var RenderItem = class extends Laya.Image {
     get dataSource() {
       return this._data;
