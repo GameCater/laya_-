@@ -1,4 +1,5 @@
 import { GameConfig } from "../GameConfig";
+import AnimationManager from "./AnimationManager";
 import { MenuStateRTBase } from "./MenuStateRT.generated";
 
 const { regClass, property } = Laya;
@@ -51,7 +52,10 @@ export class MenuStateRT extends MenuStateRTBase {
                     "resources/icon/BTN_START.png",
                     "resources/icon/BTN_START_TOUCH.png",
                 ];
+
                 this.Btn_start.visible = true;
+                AnimationManager.instance.registerAniDelayShow(this.Btn_start, 300);
+                AnimationManager.instance.registerAniRushIn(this.Btn_start, new Laya.Point(291, 0), 400);
                 this.Btn_start.on(Laya.Event.CLICK, this, this.startGame);
             });
         });

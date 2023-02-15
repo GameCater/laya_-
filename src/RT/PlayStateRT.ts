@@ -1,5 +1,6 @@
 import { BoardManager } from "../BoardManager";
 import { GameConfig } from "../GameConfig";
+import AnimationManager from "./AnimationManager";
 import { PlayStateRTBase } from "./PlayStateRT.generated";
 const { regClass } = Laya;
 
@@ -10,7 +11,10 @@ export class PlayStateRT extends PlayStateRTBase {
     private originLength: number;
     private currentLevel: number = 0;
 
-    onOpened(param: any): void {        
+    onOpened(param: any): void {
+
+        AnimationManager.instance.registerAniDelayShow(this, 150);
+
         this.currentLevel = param.rank;
 
         this.Button_menu.skins = [
@@ -48,14 +52,14 @@ export class PlayStateRT extends PlayStateRTBase {
         Laya.Scene.open('SceneMenu.ls', true);
     }
 
-    private winLevel() {
+    private winLevel(levelScore: number, totalScore: number) {
 
         // 是否通关
         let nextLevelIndex = this.currentLevel;
         this.currentLevel += 1;
         if (nextLevelIndex >= GameConfig.Level.length) {
-            // todo
-            this.gameover();
+
+            this.gameover(totalScore);
             return;
         }
 
@@ -69,6 +73,8 @@ export class PlayStateRT extends PlayStateRTBase {
             'resources/icon/BTN_NEXT_LEVEL.png',
             'resources/icon/BTN_NEXT_LEVEL_TOUCH.png',
         ];
+
+        this.FontClip_levelScore.value = '' + levelScore;
 
         this.Button_nextLevel.on(Laya.Event.CLICK, this, () => {
 
@@ -84,7 +90,7 @@ export class PlayStateRT extends PlayStateRTBase {
         });
     }
 
-    private gameover() {
+    private gameover(gameScore: number = 0) {
 
         // 清理点击事件
         this.Button_menu.offAll(Laya.Event.CLICK);
@@ -96,6 +102,9 @@ export class PlayStateRT extends PlayStateRTBase {
             'resources/icon/BTN.png',
             'resources/icon/BTN_TOUCH.png',
         ];
+
+        this.FontClip_gameScore.value = '' + gameScore;
+
         this.Button_backHome.on(Laya.Event.CLICK, () => {
             Laya.Scene.open('SceneMenu.ls', true);
         });

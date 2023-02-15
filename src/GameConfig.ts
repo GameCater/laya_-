@@ -13,6 +13,8 @@ export class GameConfig {
         PAUSED: 'gamePaused',
         WIN: 'gameWin'
     }
+
+    public static ClEAR_SCORE = 10;
 }
 
 type LevelInfo = {

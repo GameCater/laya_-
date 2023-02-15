@@ -24,6 +24,10 @@ export class BoardManager extends Laya.Script {
     private paused: boolean = false;
     private win: boolean = false;
 
+    // 得分： 图案消除10分 累计消除分 * ( 1 - 关卡耗时 / 关卡限时 )
+    private score: number = 0;
+    private totalScore: number = 0;
+
     override onAwake(): void {
         this.board = this.owner as Laya.List;
         this.board.itemRender = RenderItem;
@@ -38,6 +42,7 @@ export class BoardManager extends Laya.Script {
         this.paused = false;
         this.win = false;
         // this.board.visible = !this.board.visible;
+        this.totalScore = 0;
     }
 
     onUpdate(): void {
@@ -49,14 +54,26 @@ export class BoardManager extends Laya.Script {
         if (leftTime <= 0) {
             this.isGameover = true;
             this.currentTime = this.limitTime;
-            Laya.stage.event(GameConfig.Message.GAMEOVER);
+
+            Laya.stage.event(GameConfig.Message.GAMEOVER, Math.floor(this.totalScore));
             return;
         }
 
         // 判断通关
         if (this.total === 0) {
+
+            // 当前关卡得分
+            this.score *= leftTime;
+            // 游戏总得分
+            this.totalScore += this.score;
+
             this.win = true;
-            Laya.stage.event(GameConfig.Message.WIN);
+            let scoreList: number[] = [ Math.floor(this.score), Math.floor(this.totalScore) ];
+            
+            Laya.stage.event(GameConfig.Message.WIN, scoreList);
+
+            // 重置关卡得分
+            this.score = 0;
         }
     }
     
@@ -129,6 +146,8 @@ export class BoardManager extends Laya.Script {
             if (this.selected.length === 2 && this.canRemove(this.selected[0], this.selected[1])) {
                 this.removeItems();
                 this.total -= 2;
+
+                this.score += GameConfig.ClEAR_SCORE;
             }
         }
     }

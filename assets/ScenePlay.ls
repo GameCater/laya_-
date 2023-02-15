@@ -19,7 +19,7 @@
       "right": 0,
       "top": 0,
       "bottom": 0,
-      "skin": "res://b87a283b-09a2-45b9-8a78-ad8dd10eed0b"
+      "skin": "res://5528158c-fe09-4ac1-a774-2bd01e90ea05"
     },
     {
       "_$id": "1bcxzpyq",
@@ -131,38 +131,6 @@
       ]
     },
     {
-      "_$id": "p7y3er5i",
-      "_$type": "Image",
-      "name": "Image_scoreBoard",
-      "x": 200,
-      "y": 72,
-      "width": 191.35631689345453,
-      "height": 70.26364760931536,
-      "skin": "res://063d0b4a-ac3c-4f4e-a444-3eddac1de200"
-    },
-    {
-      "_$id": "t7b4ukvu",
-      "_$type": "Image",
-      "name": "Image_scoreTip",
-      "x": 170,
-      "y": 94,
-      "width": 149,
-      "height": 26,
-      "skin": "res://f402ff38-257e-4b16-ac7f-19cbe4df6aed"
-    },
-    {
-      "_$id": "nm3dthp2",
-      "_$var": true,
-      "_$type": "Image",
-      "name": "Image_score",
-      "x": 287,
-      "y": 100,
-      "width": 14,
-      "height": 15,
-      "skin": "res://368956d6-4d2b-4cc6-b173-67e04b1ee20e",
-      "group": "1"
-    },
-    {
       "_$id": "eq16shy9",
       "_$var": true,
       "_$type": "Dialog",
@@ -202,6 +170,24 @@
           "labelSize": 20
         },
         {
+          "_$id": "7x83vb4i",
+          "_$var": true,
+          "_$type": "FontClip",
+          "name": "FontClip_levelScore",
+          "y": 100,
+          "width": 419,
+          "height": 49,
+          "centerX": 0,
+          "centerY": -20,
+          "interval": 50,
+          "skin": "res://d24c1cbc-0657-41fa-a966-471705de2af1",
+          "align": "center",
+          "sheet": "0123456789",
+          "value": "0",
+          "spaceX": -7,
+          "spaceY": 0
+        },
+        {
           "_$id": "wbe7091x",
           "_$type": "Label",
           "name": "Label_dialogTip",
@@ -216,7 +202,6 @@
           "bold": true,
           "align": "center",
           "valign": "middle",
-          "overflow": "visible",
           "leading": 0,
           "padding": "0,0,0,0",
           "stroke": 8,
@@ -227,17 +212,16 @@
           "_$type": "Label",
           "name": "Label_scoreTip",
           "x": 13,
-          "y": -10,
+          "y": -8,
           "width": 393,
           "height": 129,
           "centerX": 0,
-          "text": "当前分数",
+          "text": "关卡得分",
           "fontSize": 50,
           "color": "rgba(80, 100, 13, 1)",
           "bold": true,
           "align": "center",
           "valign": "middle",
-          "overflow": "visible",
           "leading": 0,
           "padding": "0,0,0,0",
           "stroke": 6.4,
@@ -286,6 +270,24 @@
           "labelSize": 20
         },
         {
+          "_$id": "51yevujq",
+          "_$var": true,
+          "_$type": "FontClip",
+          "name": "FontClip_gameScore",
+          "y": 120,
+          "width": 419,
+          "height": 49,
+          "centerX": 0,
+          "centerY": 0,
+          "interval": 50,
+          "skin": "res://d24c1cbc-0657-41fa-a966-471705de2af1",
+          "align": "center",
+          "sheet": "0123456789",
+          "value": "0",
+          "spaceX": -7,
+          "spaceY": 0
+        },
+        {
           "_$id": "27cb4kgr",
           "_$type": "Label",
           "name": "Label_dialogTip",
@@ -300,7 +302,6 @@
           "bold": true,
           "align": "center",
           "valign": "middle",
-          "overflow": "visible",
           "leading": 0,
           "padding": "0,0,0,0",
           "stroke": 8,
@@ -311,7 +312,7 @@
           "_$type": "Label",
           "name": "Label_scoreTip",
           "x": 13,
-          "y": -10,
+          "y": -11,
           "width": 393,
           "height": 129,
           "centerX": 0,
@@ -321,7 +322,6 @@
           "bold": true,
           "align": "center",
           "valign": "middle",
-          "overflow": "visible",
           "leading": 0,
           "padding": "0,0,0,0",
           "stroke": 6.4,
@@ -342,7 +342,6 @@
           "align": "center",
           "valign": "middle",
           "leading": 0,
-          "overflow": "visible",
           "strokeColor": "rgba(52, 40, 4, 1)"
         }
       ]
@@ -386,7 +385,6 @@
           "align": "center",
           "valign": "middle",
           "leading": 0,
-          "overflow": "visible",
           "stroke": 2,
           "strokeColor": "rgba(43, 62, 23, 1)"
         }
