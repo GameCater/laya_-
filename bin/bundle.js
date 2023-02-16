@@ -57,6 +57,57 @@ function __$decorate(assetId, codePath) {
   };
   GameConfig.ClEAR_SCORE = 10;
 
+  // E:/projects/laya3/demo_0_2d/src/RT/AnimationManager.ts
+  var _AnimationManager = class {
+    constructor() {
+      if (_AnimationManager.instance) {
+        _AnimationManager.instance = new _AnimationManager();
+      }
+    }
+    // 延迟显示
+    registerAniDelayShow(target, delay) {
+      Laya.Tween.from(target, { alpha: 0 }, delay, Laya.Ease.circIn);
+    }
+    // 闯入
+    registerAniRushIn(target, positon, duration) {
+      Laya.Tween.to(target, { x: positon.x }, duration, Laya.Ease.bounceOut);
+    }
+    // 一次缩放
+    registerAniScale(target, duration, callback) {
+      Laya.Tween.to(target, { scaleX: 0.8, scaleY: 0.8 }, duration / 2, Laya.Ease.linearIn, Laya.Handler.create(this, () => {
+        Laya.Tween.to(target, { scaleX: 1, scaleY: 1 }, duration, Laya.Ease.linearOut, Laya.Handler.create(this, () => {
+          if (callback) {
+            callback();
+          }
+        }));
+      }));
+    }
+    registerAniFadeAway(target, duration, callback) {
+      let exit = false;
+      if (!exit) {
+        let overturn = false;
+        Laya.timer.loop(duration, this, () => {
+          if (overturn) {
+            Laya.Tween.to(target, { rotation: 30 }, duration / 12, Laya.Ease.circIn);
+          } else {
+            Laya.Tween.to(target, { rotation: -30 }, duration / 12, Laya.Ease.circIn);
+          }
+          overturn = !overturn;
+        });
+        Laya.Tween.to(target, { scaleX: 0, scaleY: 0 }, duration, Laya.Ease.circInOut, Laya.Handler.create(this, () => {
+          exit = true;
+          if (callback) {
+            callback();
+          }
+          Laya.timer.clearAll(this);
+        }));
+      }
+    }
+  };
+  var AnimationManager = _AnimationManager;
+  __name(AnimationManager, "AnimationManager");
+  AnimationManager.instance = new _AnimationManager();
+
   // E:/projects/laya3/demo_0_2d/src/tool/generateJson.js
   function generateListData(row, col, gridWidth, gridSpace) {
     const listData = new Array(row * col);
@@ -123,6 +174,10 @@ function __$decorate(assetId, codePath) {
       this.win = false;
       this.score = 0;
       this.totalScore = 0;
+      this.fadeAwayDuration = 200;
+      this.linePath = new Path();
+      this.lineWidth = 6;
+      this.lineColor = "#ff0000";
     }
     onAwake() {
       this.board = this.owner;
@@ -178,9 +233,13 @@ function __$decorate(assetId, codePath) {
         return;
       }
       this.board.renderHandler = Laya.Handler.create(this, (cell, index) => {
+        cell.scale(1, 1);
+        cell.rotation = 0;
+        cell.anchorX = 0.5;
+        cell.anchorY = 0.5;
         let p = Point.transformIdx2Point(index, this.col);
-        cell.y = (gridWidth + gridSpace) * p.x;
-        cell.x = (gridWidth + gridSpace) * p.y;
+        cell.y = (gridWidth + gridSpace) * p.x + gridWidth / 2;
+        cell.x = (gridWidth + gridSpace) * p.y + gridWidth / 2;
       }, null, false);
       this.board.array = data;
       this.total = (this.col - 2) * (this.row - 2);
@@ -195,6 +254,7 @@ function __$decorate(assetId, codePath) {
       this.board.selectHandler = Laya.Handler.create(this, this.onItemSelect, null, false);
       this.enabled = true;
     }
+    // 点选后
     onItemSelect(idx) {
       const item = this.board.array[idx];
       if (item.listItemImg.skin) {
@@ -206,9 +266,16 @@ function __$decorate(assetId, codePath) {
         }
         item.listItemImg.skin = item.listItemImg.skin.replace(/(\d+)/, "$1_touch");
         if (this.selected.length === 2 && this.canRemove(this.selected[0], this.selected[1])) {
-          this.removeItems();
-          this.total -= 2;
-          this.score += GameConfig.ClEAR_SCORE;
+          let selected1 = this.board.getCell(this.selected[0]);
+          let selected2 = this.board.getCell(this.selected[1]);
+          this.drawLinePath(this.linePath);
+          AnimationManager.instance.registerAniFadeAway(selected1, this.fadeAwayDuration);
+          AnimationManager.instance.registerAniFadeAway(selected2, this.fadeAwayDuration, () => {
+            this.board.graphics.clear();
+            this.removeItems();
+            this.total -= 2;
+            this.score += GameConfig.ClEAR_SCORE;
+          });
         }
       }
     }
@@ -220,6 +287,13 @@ function __$decorate(assetId, codePath) {
       if (!isSame)
         return false;
       const res = this.matchBlockTwo(srcP, destP);
+      if (res !== null) {
+        this.linePath = new Path();
+        this.linePath.start = srcP;
+        this.linePath.end = destP;
+        this.linePath.middleA = res.length >= 1 ? res[0] : null;
+        this.linePath.middleB = res.length >= 1 ? res.length === 2 ? res[1] : null : null;
+      }
       return res !== null;
     }
     /**
@@ -434,6 +508,31 @@ function __$decorate(assetId, codePath) {
       }
       return false;
     }
+    // 绘制消除路径
+    drawLinePath(path) {
+      let boardGraphic = this.board.graphics;
+      let startX = path.start.y * this.imgWidth + (path.start.y - 1) * this.gridSpace + this.imgWidth / 2;
+      let endX = path.end.y * this.imgWidth + (path.end.y - 1) * this.gridSpace + this.imgHeight / 2;
+      let startY = path.start.x * this.imgHeight + (path.start.x - 1) * this.gridSpace + this.imgWidth / 2;
+      let endY = path.end.x * this.imgHeight + (path.end.x - 1) * this.gridSpace + this.imgHeight / 2;
+      let middleX, middleY;
+      let middleBX, middleBY;
+      if (path.middleA) {
+        middleX = path.middleA.y * this.imgWidth + (path.middleA.y - 1) * this.gridSpace + this.imgWidth / 2;
+        middleY = path.middleA.x * this.imgHeight + (path.middleA.x - 1) * this.gridSpace + this.imgHeight / 2;
+      }
+      if (path.middleB) {
+        middleBX = path.middleB.y * this.imgWidth + (path.middleB.y - 1) * this.gridSpace + this.imgWidth / 2;
+        middleBY = path.middleB.x * this.imgWidth + (path.middleB.x - 1) * this.gridSpace + this.imgWidth / 2;
+      }
+      if (!path.middleA && !path.middleB) {
+        boardGraphic.drawLine(startX, startY, endX, endY, this.lineColor, this.lineWidth);
+      } else if (!path.middleB) {
+        boardGraphic.drawLines(startX, startY, [0, 0, middleX - startX, middleY - startY, endX - startX, endY - startY], this.lineColor, this.lineWidth);
+      } else {
+        boardGraphic.drawLines(startX, startY, [0, 0, middleX - startX, middleY - startY, middleBX - startX, middleBY - startY, endX - startX, endY - startY], this.lineColor, this.lineWidth);
+      }
+    }
   }, "BoardManager");
   BoardManager = __decorate([
     regClass()
@@ -458,6 +557,8 @@ function __$decorate(assetId, codePath) {
     constructor() {
       this.start = new Point(0, 0);
       this.end = new Point(0, 0);
+      this.middleA = new Point(0, 0);
+      this.middleB = new Point(0, 0);
     }
   };
   __name(Path, "Path");
@@ -485,29 +586,6 @@ function __$decorate(assetId, codePath) {
     }
   };
   __name(RenderItem, "RenderItem");
-
-  // E:/projects/laya3/demo_0_2d/src/RT/AnimationManager.ts
-  var _AnimationManager = class {
-    constructor() {
-      if (_AnimationManager.instance) {
-        _AnimationManager.instance = new _AnimationManager();
-      }
-    }
-    registerAniDelayShow(target, delay) {
-      Laya.Tween.from(target, { alpha: 0 }, delay, Laya.Ease.circIn);
-    }
-    registerAniRushIn(target, positon, duration) {
-      Laya.Tween.to(target, { x: positon.x }, duration, Laya.Ease.bounceOut);
-    }
-    registerAniScale(target, duration) {
-      Laya.Tween.to(target, { scaleX: 0.8, scaleY: 0.8 }, duration, Laya.Ease.linearIn, Laya.Handler.create(this, () => {
-        Laya.Tween.to(target._extra, { scaleX: 1, scaleY: 1 }, duration, Laya.Ease.linearOut);
-      }));
-    }
-  };
-  var AnimationManager = _AnimationManager;
-  __name(AnimationManager, "AnimationManager");
-  AnimationManager.instance = new _AnimationManager();
 
   // E:/projects/laya3/demo_0_2d/src/RT/MenuStateRT.generated.ts
   var MenuStateRTBase = class extends Laya.Scene {
@@ -544,7 +622,8 @@ function __$decorate(assetId, codePath) {
           "resources/icon/TIME__FULL.png",
           "resources/icon/TIME_EMPTY.png",
           "resources/icon/BTN.png",
-          "resources/icon/BTN_TOUCH.png"
+          "resources/icon/BTN_TOUCH.png",
+          "resources/bg/majong_BG.png"
         ];
         let maxNum = 32;
         for (let i = 1; i <= maxNum; i++) {
@@ -600,7 +679,7 @@ function __$decorate(assetId, codePath) {
       this.currentLevel = 0;
     }
     onOpened(param) {
-      AnimationManager.instance.registerAniDelayShow(this, 150);
+      AnimationManager.instance.registerAniDelayShow(this.Image_main, 460);
       this.currentLevel = param.rank;
       this.Button_menu.skins = [
         "resources/icon/BTN_MAIN_MENU_ICON.png",
@@ -635,6 +714,7 @@ function __$decorate(assetId, codePath) {
       this.Button_menu.offAll(Laya.Event.CLICK);
       this.Button_pause.offAll(Laya.Event.CLICK);
       this.Board.visible = false;
+      AnimationManager.instance.registerAniScale(this.Dialog_nextLevel, 200);
       this.Dialog_nextLevel.visible = true;
       this.Button_nextLevel.skins = [
         "resources/icon/BTN_NEXT_LEVEL.png",
@@ -655,6 +735,7 @@ function __$decorate(assetId, codePath) {
       this.Button_menu.offAll(Laya.Event.CLICK);
       this.Button_pause.offAll(Laya.Event.CLICK);
       this.Board.visible = false;
+      AnimationManager.instance.registerAniScale(this.Dialog_gameOver, 200);
       this.Dialog_gameOver.visible = true;
       this.Button_backHome.skins = [
         "resources/icon/BTN.png",

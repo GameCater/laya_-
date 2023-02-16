@@ -13,7 +13,7 @@ export class PlayStateRT extends PlayStateRTBase {
 
     onOpened(param: any): void {
 
-        AnimationManager.instance.registerAniDelayShow(this, 150);
+        AnimationManager.instance.registerAniDelayShow(this.Image_main, 460);
 
         this.currentLevel = param.rank;
 
@@ -68,6 +68,9 @@ export class PlayStateRT extends PlayStateRTBase {
         this.Button_pause.offAll(Laya.Event.CLICK);
 
         this.Board.visible = false;
+
+        AnimationManager.instance.registerAniScale(this.Dialog_nextLevel, 200);
+
         this.Dialog_nextLevel.visible = true;
         this.Button_nextLevel.skins = [
             'resources/icon/BTN_NEXT_LEVEL.png',
@@ -97,6 +100,9 @@ export class PlayStateRT extends PlayStateRTBase {
         this.Button_pause.offAll(Laya.Event.CLICK);
 
         this.Board.visible = false;
+
+        AnimationManager.instance.registerAniScale(this.Dialog_gameOver, 200);
+
         this.Dialog_gameOver.visible = true;
         this.Button_backHome.skins = [
             'resources/icon/BTN.png',

@@ -5,12 +5,13 @@
  * ScenePlay.ls
  */
 export class PlayStateRTBase extends Laya.Scene {
-    public Board: Laya.List;
-    public Button_menu: Laya.Button;
-    public Button_pause: Laya.Button;
+    public Image_main: Laya.Image;
     public Image_timeEmpty: Laya.Image;
     public Image_timeBefore: Laya.Image;
     public Sprite_mask: Laya.Sprite;
+    public Board: Laya.List;
+    public Button_menu: Laya.Button;
+    public Button_pause: Laya.Button;
     public Dialog_nextLevel: Laya.Dialog;
     public Button_nextLevel: Laya.Button;
     public FontClip_levelScore: Laya.FontClip;

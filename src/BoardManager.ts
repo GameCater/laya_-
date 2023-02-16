@@ -1,5 +1,6 @@
 // declare function generateListData(row: number, col: number): [];
 import { GameConfig } from './GameConfig';
+import AnimationManager from './RT/AnimationManager';
 import generateListData from './tool/generateJson';
 
 const { regClass, property } = Laya;
@@ -27,6 +28,12 @@ export class BoardManager extends Laya.Script {
     // 得分： 图案消除10分 累计消除分 * ( 1 - 关卡耗时 / 关卡限时 )
     private score: number = 0;
     private totalScore: number = 0;
+
+    private fadeAwayDuration: number = 200; // > 300ms 玩家消除速度过快时会有显示错乱问题，如果先执行消除逻辑，然后执行动画的话，就没这些问题
+
+    private linePath: Path = new Path();
+    private lineWidth: number = 6;
+    private lineColor: string = '#ff0000';
 
     override onAwake(): void {
         this.board = this.owner as Laya.List;
@@ -102,10 +109,20 @@ export class BoardManager extends Laya.Script {
             return;
         }
 
+        // 单元格渲染器
         this.board.renderHandler = Laya.Handler.create(this, (cell: Laya.Image, index: number) => {
+            // list会复用cell，恢复cell的初始状态
+            cell.scale(1, 1);
+            cell.rotation = 0;
+
+            // 使用中心作为锚点
+            cell.anchorX = 0.5;
+            cell.anchorY = 0.5;
+
+            // 动态设置cell的位置
             let p = Point.transformIdx2Point(index, this.col);
-            cell.y = (gridWidth + gridSpace) * p.x;
-            cell.x = (gridWidth + gridSpace) * p.y;
+            cell.y = (gridWidth + gridSpace) * p.x + gridWidth/2;
+            cell.x = (gridWidth + gridSpace) * p.y + gridWidth/2;
             
         }, null, false);
 
@@ -131,6 +148,7 @@ export class BoardManager extends Laya.Script {
 
     }
 
+    // 点选后
     private onItemSelect(idx: number): void {
         const item = this.board.array[idx];
         
@@ -144,10 +162,21 @@ export class BoardManager extends Laya.Script {
             item.listItemImg.skin = (item.listItemImg.skin as string).replace(/(\d+)/, '$1_touch');
 
             if (this.selected.length === 2 && this.canRemove(this.selected[0], this.selected[1])) {
-                this.removeItems();
-                this.total -= 2;
 
-                this.score += GameConfig.ClEAR_SCORE;
+                let selected1 = this.board.getCell(this.selected[0]);
+                let selected2 = this.board.getCell(this.selected[1]);
+
+                this.drawLinePath(this.linePath);
+
+                AnimationManager.instance.registerAniFadeAway(selected1, this.fadeAwayDuration);
+                AnimationManager.instance.registerAniFadeAway(selected2, this.fadeAwayDuration, () => {
+
+                    this.board.graphics.clear();
+                    this.removeItems();
+                    this.total -= 2;
+    
+                    this.score += GameConfig.ClEAR_SCORE;
+                });
             }
         }
     }
@@ -163,7 +192,14 @@ export class BoardManager extends Laya.Script {
         if (!isSame) return false;
 
         const res = this.matchBlockTwo(srcP, destP);
-        // console.log(res);
+        // 记录消除路径
+        if (res !== null) {
+            this.linePath = new Path();
+            this.linePath.start = srcP;
+            this.linePath.end = destP;
+            this.linePath.middleA = res.length >= 1 ? res[0] : null;
+            this.linePath.middleB = res.length >= 1 ? ( res.length === 2 ? res[1] : null) : null;
+        }
         
         return res !== null;
     }
@@ -416,7 +452,42 @@ export class BoardManager extends Laya.Script {
         }
         return false;
     }
-    
+
+    // 绘制消除路径
+    private drawLinePath(path: Path): void {
+        let boardGraphic = this.board.graphics;
+        // 起点与终点的绘制坐标
+        let startX = path.start.y * this.imgWidth + (path.start.y - 1) * this.gridSpace + this.imgWidth / 2;
+        let endX = path.end.y * this.imgWidth + (path.end.y - 1) * this.gridSpace + this.imgHeight / 2;
+        let startY = path.start.x * this.imgHeight + (path.start.x - 1) * this.gridSpace + this.imgWidth / 2;
+        let endY = path.end.x * this.imgHeight + (path.end.x - 1) * this.gridSpace + this.imgHeight / 2;
+
+        let middleX, middleY;
+        let middleBX, middleBY;
+        if (path.middleA) {
+            middleX = path.middleA.y * this.imgWidth + (path.middleA.y - 1) * this.gridSpace + this.imgWidth / 2;
+            middleY = path.middleA.x * this.imgHeight + (path.middleA.x - 1) * this.gridSpace + this.imgHeight / 2;
+        }
+        if (path.middleB) {
+            middleBX = path.middleB.y * this.imgWidth + (path.middleB.y - 1) * this.gridSpace + this.imgWidth / 2;
+            middleBY = path.middleB.x * this.imgWidth + (path.middleB.x - 1) * this.gridSpace + this.imgWidth / 2;
+        }
+
+        if (!path.middleA && !path.middleB) { // 直连
+            boardGraphic.drawLine(startX, startY, endX, endY, this.lineColor, this.lineWidth);
+        } else if (!path.middleB) { // 一折
+            // boardGraphic.drawLine(startX, startY, middleX, middleY, this.lineColor, this.lineWidth);
+            // boardGraphic.drawLine(middleX, middleY, endX, endY, this.lineColor, this.lineWidth);
+
+            boardGraphic.drawLines(startX, startY, [ 0, 0, middleX - startX, middleY - startY, endX - startX, endY - startY ], this.lineColor, this.lineWidth);
+        } else { // 二折
+            // boardGraphic.drawLine(startX, startY, middleX, middleY, this.lineColor, this.lineWidth);
+            // boardGraphic.drawLine(middleX, middleY, middleBX, middleBY, this.lineColor, this.lineWidth);
+            // boardGraphic.drawLine(middleBX, middleBY, endX, endY, this.lineColor, this.lineWidth);
+
+            boardGraphic.drawLines(startX, startY, [ 0, 0, middleX - startX, middleY - startY, middleBX - startX, middleBY - startY, endX - startX, endY - startY ], this.lineColor, this.lineWidth);
+        }
+    }
 }
 
 class Point {
@@ -442,6 +513,11 @@ class Point {
 class Path {
     start: Point = new Point(0, 0);
     end: Point = new Point(0, 0);
+
+    // 一折拐点
+    middleA: Point = new Point(0, 0);
+    // 二折拐点
+    middleB: Point = new Point(0, 0);
 }
 
 class Sequence {

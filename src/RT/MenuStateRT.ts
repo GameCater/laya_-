@@ -35,6 +35,7 @@ export class MenuStateRT extends MenuStateRTBase {
                 'resources/icon/TIME_EMPTY.png',
                 'resources/icon/BTN.png',
                 'resources/icon/BTN_TOUCH.png',
+                'resources/bg/majong_BG.png',
             ];
             let maxNum = 32;
             for (let i = 1; i <= maxNum; i ++) {

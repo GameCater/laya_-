@@ -5,7 +5,7 @@ export class GameConfig {
         { rank: 2, col: 9, row: 12, gridWidth: 60, gridSpace: 2 ,limitTime: 10 }, // 9 12
         { rank: 3, col: 12, row: 16, gridWidth: 46, gridSpace: 2 ,limitTime: 15 }, // 12 16
     ]
-
+    
     // 游戏消息通信
     public static Message: Message = {
         TIME: 'leftTime',
