@@ -11,7 +11,8 @@ export class GameConfig {
         TIME: 'leftTime',
         GAMEOVER: 'gameOver',
         PAUSED: 'gamePaused',
-        WIN: 'gameWin'
+        WIN: 'gameWin',
+        SCORE: 'showScore'
     }
 
     public static ClEAR_SCORE = 10;

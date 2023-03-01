@@ -168,6 +168,8 @@ export class BoardManager extends Laya.Script {
 
                 this.drawLinePath(this.linePath);
 
+                Laya.stage.event(GameConfig.Message.SCORE);
+                
                 AnimationManager.instance.registerAniFadeAway(selected1, this.fadeAwayDuration);
                 AnimationManager.instance.registerAniFadeAway(selected2, this.fadeAwayDuration, () => {
 

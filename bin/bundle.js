@@ -53,7 +53,8 @@ function __$decorate(assetId, codePath) {
     TIME: "leftTime",
     GAMEOVER: "gameOver",
     PAUSED: "gamePaused",
-    WIN: "gameWin"
+    WIN: "gameWin",
+    SCORE: "showScore"
   };
   GameConfig.ClEAR_SCORE = 10;
 
@@ -70,7 +71,13 @@ function __$decorate(assetId, codePath) {
     }
     // 闯入
     registerAniRushIn(target, positon, duration) {
-      Laya.Tween.to(target, { x: positon.x }, duration, Laya.Ease.bounceOut);
+      if (positon.x && positon.y) {
+        Laya.Tween.to(target, { x: positon.x, y: positon.y }, duration, Laya.Ease.bounceOut);
+      } else if (positon.x) {
+        Laya.Tween.to(target, { x: positon.x }, duration, Laya.Ease.bounceOut);
+      } else if (positon.y) {
+        Laya.Tween.to(target, { y: positon.y }, duration, Laya.Ease.bounceOut);
+      }
     }
     // 一次缩放
     registerAniScale(target, duration, callback) {
@@ -269,6 +276,7 @@ function __$decorate(assetId, codePath) {
           let selected1 = this.board.getCell(this.selected[0]);
           let selected2 = this.board.getCell(this.selected[1]);
           this.drawLinePath(this.linePath);
+          Laya.stage.event(GameConfig.Message.SCORE);
           AnimationManager.instance.registerAniFadeAway(selected1, this.fadeAwayDuration);
           AnimationManager.instance.registerAniFadeAway(selected2, this.fadeAwayDuration, () => {
             this.board.graphics.clear();
@@ -700,6 +708,13 @@ function __$decorate(assetId, codePath) {
       });
       Laya.stage.on(GameConfig.Message.GAMEOVER, this, this.gameover);
       Laya.stage.on(GameConfig.Message.WIN, this, this.winLevel);
+      Laya.stage.on(GameConfig.Message.SCORE, this, this.showScore);
+    }
+    showScore() {
+      AnimationManager.instance.registerAniRushIn(this.Box_addScore, new Laya.Point(0, 400), 500);
+      Laya.timer.once(600, this, () => {
+        AnimationManager.instance.registerAniRushIn(this.Box_addScore, new Laya.Point(0, 20), 100);
+      });
     }
     backMenu() {
       Laya.Scene.open("SceneMenu.ls", true);

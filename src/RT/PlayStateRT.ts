@@ -45,6 +45,16 @@ export class PlayStateRT extends PlayStateRTBase {
 
         // level win
         Laya.stage.on(GameConfig.Message.WIN, this, this.winLevel);
+
+        // 得分提示
+        Laya.stage.on(GameConfig.Message.SCORE, this, this.showScore);
+    }
+
+    private showScore() {
+        AnimationManager.instance.registerAniRushIn(this.Box_addScore, new Laya.Point(0, 400), 500);
+        Laya.timer.once(600, this, () => {
+            AnimationManager.instance.registerAniRushIn(this.Box_addScore, new Laya.Point(0, 20), 100);
+        })
     }
 
     private backMenu() {

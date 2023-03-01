@@ -19,5 +19,6 @@ export class PlayStateRTBase extends Laya.Scene {
     public Button_backHome: Laya.Button;
     public FontClip_gameScore: Laya.FontClip;
     public Box_pause: Laya.Box;
+    public Box_addScore: Laya.Box;
 }
 

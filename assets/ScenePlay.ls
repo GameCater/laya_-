@@ -421,6 +421,61 @@
           "strokeColor": "rgba(43, 62, 23, 1)"
         }
       ]
+    },
+    {
+      "_$id": "p96kbvvp",
+      "_$var": true,
+      "_$type": "Box",
+      "name": "Box_addScore",
+      "x": 360,
+      "y": 20,
+      "width": 200,
+      "height": 200,
+      "pivotX": 100,
+      "pivotY": 100,
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "centerX": 0,
+      "_$child": [
+        {
+          "_$id": "i01qmmmm",
+          "_$type": "Text",
+          "name": "Text",
+          "x": -4,
+          "y": -123,
+          "width": 69,
+          "height": 200,
+          "text": "+",
+          "fontSize": 100,
+          "bold": true,
+          "color": "rgba(255, 255, 8, 1)",
+          "align": "center",
+          "valign": "middle",
+          "leading": 0,
+          "stroke": 20,
+          "strokeColor": "rgba(131, 99, 28, 1)"
+        },
+        {
+          "_$id": "4kma46ek",
+          "_$type": "Image",
+          "name": "Image",
+          "x": 60,
+          "y": -78,
+          "width": 70,
+          "height": 100,
+          "skin": "res://8c4af977-a791-4363-a6a2-fb407e3165d9"
+        },
+        {
+          "_$id": "1ry64c7x",
+          "_$type": "Image",
+          "name": "Image(1)",
+          "x": 120,
+          "y": -83,
+          "width": 70,
+          "height": 100,
+          "skin": "res://0b4835cf-cd54-4f00-ace8-1082a8066dd9"
+        }
+      ]
     }
   ]
 }

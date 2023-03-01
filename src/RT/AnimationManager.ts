@@ -14,7 +14,13 @@ export default class AnimationManager {
 
     // 闯入
     public registerAniRushIn(target: Laya.Sprite, positon: Laya.Point, duration: number): void {
-        Laya.Tween.to(target, { x: positon.x }, duration, Laya.Ease.bounceOut);
+        if (positon.x && positon.y) {
+            Laya.Tween.to(target, { x: positon.x , y: positon.y }, duration, Laya.Ease.bounceOut);
+        } else if (positon.x) {
+            Laya.Tween.to(target, { x: positon.x }, duration, Laya.Ease.bounceOut);
+        } else if (positon.y) {
+            Laya.Tween.to(target, { y: positon.y }, duration, Laya.Ease.bounceOut);
+        }
     }
 
     // 一次缩放
